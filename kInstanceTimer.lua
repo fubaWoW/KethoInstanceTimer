@@ -2,85 +2,69 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.3 [2011.12.02]			---
+--- Version: 0.4 [2012.06.01]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
 
 -- To Do: new record time
 
-local NAME = ...
-local VERSION = 0.3
-local BUILD = "Release"
-
-	-----------------
-	--- Libraries ---
-	-----------------
+local NAME, S = ...
+S.VERSION = 0.4
+S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
 local KIT = kInstanceTimer
+KIT.S = S -- debug purpose
 
-local ACR = LibStub("AceConfigRegistry-3.0")
-local ACD = LibStub("AceConfigDialog-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("kInstanceTimer", true)
+local L = S.L
+local profile, char
 
-	----------------
-	--- Upvalues ---
-	----------------
+function KIT:RefreshDB1()
+	profile = self.db.profile
+	char = self.db.char
+end
 
-local _G = _G
 local date, time = date, time
 local floor, mod = floor, mod
 local format, gsub = format, gsub 
 
-local IsInInstance = IsInInstance
-local GetBattlefieldInstanceRunTime = GetBattlefieldInstanceRunTime
+S.args = {}
+local args = S.args
 
-local profile, char
+	--------------
+	--- Events ---
+	--------------
 
-local timeInstance2
-local lastTimeInst, lastTimeBG
-
-local cropped = ":64:64:4:60:4:60"
-
-local pve = {
-	["party"] = true,
-	["raid"] = true,
+S.events = {
+	"CHAT_MSG_CHANNEL_NOTICE",
+	"CHAT_MSG_SYSTEM",
+	"COMBAT_LOG_EVENT_UNFILTERED",
+	
+	-- fallback/secondary events
+	"LFG_PROPOSAL_SUCCEEDED",
+	"LFG_COMPLETION_REWARD",
 }
 
-local pvp = {
-	["pvp"] = true,
-	["arena"] = true,
+	----------------------
+	--- Instance Types ---
+	----------------------
+
+S.pve = {
+	party = true,
+	raid = true,
 }
 
-	--------------------
-	--- Time Strings ---
-	--------------------
-
-local D_SECONDS = strlower(D_SECONDS)
-local D_MINUTES = strlower(D_MINUTES)
-local D_HOURS = strlower(D_HOURS)
-local D_DAYS = strlower(D_DAYS)
-
-if GetLocale() == "deDE" then
-	D_SECONDS = _G.D_SECONDS
-	D_MINUTES = _G.D_MINUTES
-	D_HOURS = _G.D_HOURS
-	D_DAYS = _G.D_DAYS
-end
-
-local bttn = CreateFrame("Button")
-
-local MINUTES2 = gsub(bttn:GetText(bttn:SetFormattedText(D_MINUTES, 2)), "2 ", "") -- plural minutes
-local SECONDS2 = gsub(bttn:GetText(bttn:SetFormattedText(D_SECONDS, 2)), "2 ", "") -- plural seconds
-
-local D_MINUTES2 = gsub(D_MINUTES, "%%d", "%%.1f") -- integer -> float
+S.pvp = {
+	pvp = true,
+	arena = true,
+}
 
 	----------------
 	--- Boss IDs ---
 	----------------
 
-local BossIDs = { -- Instance Timer
+S.BossIDs = { -- Instance Timer
 --	[01-60] Classic
 	[1853] = true, -- Darkmaster Gandling; Scholomance
 	[2748] = true, -- Archaedas; Uldaman
@@ -165,7 +149,21 @@ local BossIDs = { -- Instance Timer
 	[54938] = true, -- Archbishop Benedictus; Hour of Twilight
 }
 
-local RaidBossIDs = { -- untested
+S.PreBossIDs = {
+	[12236] = true, -- Lord Vyletongue
+	[12258] = true, -- Razorlash
+	[9018] = true, -- High Interrogator Gerstahn
+	[10813] = true, -- Balnazzar
+}
+
+-- superfluous?
+S.FinalBossIDs = {
+	[12201] = true, -- Princess Theradras
+	[9019] = true, -- Emperor Dagran Thaurissan
+	[45412] = true, -- Lord Aurius Rivendare
+}
+
+S.RaidBossIDs = { -- untested
 	[52363] = true, -- Occu'thar; Baradin Hold
 	[43324] = true, -- Cho'gall; The Bastion of Twilight
 	[41376] = true, -- Nefarian; Blackwing Descent
@@ -175,12 +173,12 @@ local RaidBossIDs = { -- untested
 	[56173] = true, -- Deathwing; Dragon Soul (not sure if this one works)
 }
 
-local SubZoneBossIDs = {
+S.SubZoneBossIDs = {
 	-- Scarlet Monastery
-	[4543] = L["Graveyard"], -- [27-37?] Bloodmage Thalnos
-	[6487] = L["Library"], -- [30-40?] Arcanist Doan
-	[3975] = L["Armory"], -- [32-42?] Herod
-	[3977] = L["Cathedral"], -- [35-45] High Inquisitor Whitemane
+	[4543] = L.Graveyard, -- [27-37?] Bloodmage Thalnos
+	[6487] = L.Library, -- [30-40?] Arcanist Doan
+	[3975] = L.Armory, -- [32-42?] Herod
+	[3977] = L.Cathedral, -- [35-45] High Inquisitor Whitemane
 	-- Maraudon
 	[12236] = L["The Wicked Grotto"], -- [39-49?] Lord Vyletongue
 	[12258] = L["Foulspore Cavern"], -- [41-51?] Razorlash
@@ -197,538 +195,250 @@ local SubZoneBossIDs = {
 	[45412] = L["Service Entrance"], -- [46-56] Lord Aurius Rivendare
 }
 
-local SubRaidZoneBossIDs = {
+S.SubRaidZoneBossIDs = {
 	-- Dragon Soul
 	[55689] = L["Fall of Deathwing"], -- Hagara the Stormbinder
 	[56173] = L["The Siege of Wyrmrest Temple"], --  Deathwing
 }
 
-local preBossIDs = {
-	[12236] = true, -- Lord Vyletongue
-	[12258] = true, -- Razorlash
-	[9018] = true, -- High Interrogator Gerstahn
-	[10813] = true, -- Balnazzar
-}
+	---------------------
+	--- Instance Time ---
+	---------------------
 
-local finalBossIDs = {
-	[12201] = true, -- Princess Theradras
-	[9019] = true, -- Emperor Dagran Thaurissan
-	[45412] = true, -- Lord Aurius Rivendare
-}
+function KIT:GetInstanceTime()
+	return S.backupInstance or char.timeInstance
+end
+
+function KIT:StartData()
+	char.timeInstance = time()
+	
+	char.startDate = date("%Y.%m.%d")
+	char.startTime = date("%H:%M")
+end
+
+function KIT:ResetTime(isLeave)
+	char.timeInstance = 0
+	char.startDate = ""
+	char.startTime = ""
+	
+	if isLeave then
+		S.backupInstance = nil
+		S.LastInst = nil
+	end
+end
+
+	------------
+	--- Time ---
+	------------
+
+function KIT:SecondsTime(v)
+	return SecondsToTime(v, profile.TimeOmitSec, not profile.TimeAbbrev, profile.TimeMaxCount)
+end
+
+do
+	-- not capitalized
+	local D_SECONDS = strlower(D_SECONDS)
+	local D_MINUTES = strlower(D_MINUTES)
+	local D_HOURS = strlower(D_HOURS)
+	local D_DAYS = strlower(D_DAYS)
+	
+	-- exception for German capitalization
+	if GetLocale() == "deDE" then
+		D_SECONDS = _G.D_SECONDS
+		D_MINUTES = _G.D_MINUTES
+		D_HOURS = _G.D_HOURS
+		D_DAYS = _G.D_DAYS
+	end
+	
+	function KIT:TimeString(v, full)
+		local sec = floor(v) % 60
+		local minute = floor(v/60) % 60
+		local hour = floor(v/3600) % 24
+		local day = floor(v/86400)
+		
+		local fsec = format(D_SECONDS, sec)
+		local fmin = format(D_MINUTES, minute)
+		local fhour = format(D_HOURS, hour)
+		local fday = format(D_DAYS, day)
+		
+		if v >= 86400 then
+			return (hour > 0 or full) and format("%s, %s", fday, fhour) or fday
+		elseif v >= 3600 then
+			return (minute > 0 or full) and format("%s, %s", fhour, fmin) or fhour
+		elseif v >= 60 then
+			return (sec > 0 or full) and format("%s, %s", fmin, fsec) or fmin
+		elseif v >= 0 then
+			return fsec
+		else
+			return v
+		end
+	end
+end
+
+do
+	local b = CreateFrame("Button")
+	
+	function KIT:Time(v)
+		local s
+		if profile.LegacyTime then
+			s = self:TimeString(v, not profile.TimeOmitZero)
+		else
+			s = self:SecondsTime(v)
+			s = profile.TimeLowerCase and s:lower() or s
+		end
+		-- sanitize for SendChatMessage by removing any pipe characters
+		return b:GetText(b:SetText(s)) or ""
+	end
+end
+
+	---------------------------
+	--- Time Format Example ---
+	---------------------------
+
+do
+	local tday, thour, tmin, tsec = random(9), random(23), random(59), random(59)
+	
+	S.TimeUnits = {
+		60*tmin,
+		60*tmin + tsec,
+		3600*thour + 60*tmin + tsec,
+		86400*tday + 3600*thour + 60*tmin + tsec,
+	}
+	
+	S.TimeOmitZero = 3600*thour
+end
 
 	-----------------
 	--- Stopwatch ---
 	-----------------
 
-local function StopwatchStart()
+function S.StopwatchStart()
+	
+	local v
+	local instance = select(2, IsInInstance())
+	
+	if S.pve[instance] then
+		v = KIT:GetInstanceTime()
+	elseif S.pvp[instance] then
+		v = GetBattlefieldInstanceRunTime()
+	end
+	
 	StopwatchFrame:Show()
-	Stopwatch_Clear()
+	if v and v > 0 then
+		StopwatchTicker.timer = time() - v
+	else
+		Stopwatch_Clear()
+	end
 	Stopwatch_Play()
 end
 
-local function StopwatchEnd()
+function S.StopwatchEnd()
 	Stopwatch_Clear()
 	StopwatchFrame:Hide()
 end
 
-local function IsStopwatch()
-	local instanceType = select(2, IsInInstance())
-	local isParty = profile.InstanceStopwatch and instanceType == "party"
-	local isRaid = profile.RaidStopwatch and instanceType == "raid"
-	local isBG = profile.BattlegroundStopwatch and pvp[instanceType]
-	return isParty or isRaid or isBG
+function S.IsStopwatch()
+	local instance = select(2, IsInInstance())
+	return (profile.Stopwatch and instance ~= "none")
 end
 
-local function CalibrateStopwatch()
-	local instanceType = select(2, IsInInstance())
-	if pve[instanceType] then
-		local startTime = timeInstance2 or char.timeInstance
-		StopwatchTicker.timer = lastTimeInst and lastTimeInst or startTime > 0 and time() - startTime or 0
-	elseif pvp[instanceType] then
-		local runTime = GetBattlefieldInstanceRunTime()
-		StopwatchTicker.timer = lastTimeBG and lastTimeBG or runTime > 0 and runTime / 1000 or 0
-	end
+	--------------------
+	--- Class Colors ---
+	--------------------
+
+S.classCache = setmetatable({}, {__index = function(t, k)
+	local color = CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[k] or RAID_CLASS_COLORS[k]
+	local v = format("%02X%02X%02X", color.r*255, color.g*255, color.b*255)
+	rawset(t, k, v)
+	return v
+end})
+
+	------------
+	--- Rest ---
+	------------
+
+function KIT:NoGroup()
+	return GetNumPartyMembers() == 0 and GetNumRaidMembers() == 0 and not IsOnePersonParty()
 end
 
-local function ToggleStopwatch(show)
-	if select(2, IsInInstance()) == "none" then return end
+function KIT:Zone()
+	return GetRealZoneText() or GetSubZoneText() or ZONE
+end
 
-	if show then
-		StopwatchFrame:Show()
-		Stopwatch_Play()
+	--------------
+	--- Report ---
+	--------------
+
+local exampleTime = random(3600)
+
+function KIT:InstanceText(subZone, isPreview)
+	wipe(args)
+	local instanceTime = self:GetInstanceTime()
+	
+	if isPreview then
+		args.instance = "|cffA8A8FF"..self:Zone().."|r"
+		args.time = "|cff71D5FF"..self:Time(instanceTime > 0 and time() - instanceTime or exampleTime).."|r"
+		args.start = "|cffF6ADC6"..(instanceTime > 0 and char.startTime or date("%H:%M")).."|r"
+		args["end"] = "|cffADFF2F"..date("%H:%M").."|r" -- can't use keywords as a table key o_O
+		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
+		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
 	else
-		Stopwatch_Clear()
-		StopwatchFrame:Hide()
+		args.instance = self:Zone()..(subZone and ": "..subZone or "")
+		args.time = self:Time(instanceTime > 0 and time() - instanceTime or 0)
+		args.start = char.startTime
+		args["end"] = date("%H:%M")
+		args.date = date("%Y.%m.%d")
+		args.date2 = date("%m/%d/%y")
 	end
+	return self:ReplaceArgs(profile.InstanceTimerMsg, args)
 end
 
 	---------------
-	--- Options ---
+	--- Replace ---
 	---------------
 
-local defaults = {
-	profile = {
-		Instance = true,
-		instanceTimerMsg = L["instanceTimerMsg"],
-		TimeFormat = 1,
-		RecordInstance = true,
-		sink20OutputSink = "Channel",
-		sink20ScrollArea = GROUP,
-	},
-	-- dont know the proper way for this (=.=)
-	char = {
-		timeInstance = 0,
-		timeInstanceStart = "",
-		timeInstanceStart2 = "",
-	},
-}
-
-local tempList = {}
-
-local options = {
-	type = "group",
-	name = "|TInterface\\Icons\\Spell_Holy_BorrowedTime:16:16:3:0"..cropped.."|t  "..NAME.." |cffADFF2Fv"..VERSION.."|r",
-	handler = KIT,
-	args = {
-		spacing1 = {type = "description", order = 1, name = " "},
-		Timer = {
-			type = "group", order = 2,
-			name = L["Instance Timer"],
-			inline = true,
-			args = {
-				Instance = {
-					type = "toggle", order = 1,
-					width = "full", descStyle = "",
-					name = " |cffA8A8FF"..INSTANCE.."|r",
-					get = "GetValue", set = "SetValue",
-				},
-				Raid = {
-					type = "toggle", order = 2,
-					width = "full", descStyle = "",
-					name = " |cffFF7F00"..RAID.."|r",
-					get = "GetValue", set = "SetValue",
-				},
-			},
-		},
-		spacing2 = {type = "description", order = 3, name = " "},
-		Stopwatch = {
-			type = "group", order = 4,
-			name = STOPWATCH_TITLE,
-			inline = true,
-			args = {
-				InstanceStopwatch = {
-					type = "toggle", order = 1,
-					width = "full", descStyle = "",
-					name = " "..INSTANCE,
-					get = "GetValue", set = "SetValueStopwatch",
-				},
-				RaidStopwatch = {
-					type = "toggle", order = 2,
-					width = "full", descStyle = "",
-					name = " "..RAID,
-					get = "GetValue", set = "SetValueStopwatch",
-				},
-				BattlegroundStopwatch = {
-					type = "toggle", order = 3,
-					width = "full", descStyle = "",
-					name = " "..BATTLEGROUND,
-					get = "GetValue", set = "SetValueStopwatch",
-				},
-			},
-		},
-		inputInstanceTimerMsg = {
-			type = "input", order = 5,
-			width = "full",
-			name = " ",
-			usage = "\n|cffA8A8FF[INSTANCE]|r |cffFFFFFF= "..INSTANCE.."|r\n|cff71D5FF[TIME]|r |cffFFFFFF= Time|r\n|cffF6ADC6[START]|r |cffFFFFFF= Start Time|r\n|cffADFF2F[END]|r |cffFFFFFF= End Time|r\n|cff0070DD[DATE]|r |cffFFFFFF= MM/DD/YY|r\n|cff0070DD[DATE2]|r |cffFFFFFF= YYYY.MM.DD|r",
-			get = function(i) return profile.instanceTimerMsg end,
-			set = function(i, v) profile.instanceTimerMsg = v
-				if #strtrim(v) == 0 then
-					profile.instanceTimerMsg = defaults.profile.instanceTimerMsg
-				end
-			end,
-		},
-		descriptionExample = {
-			type = "description", order = 6,
-			name = function() return "   "..KIT:ReplaceText(profile.instanceTimerMsg, nil, true) end,
-		},
-		spacing3 = {
-			type = "description", order = 7,
-			name = "\n\n\n\n\n\n\n\n",
-		},
-		TimeFormat = {
-			type = "select", order = 8,
-			descStyle = "",
-			name = "   Time Format",
-			values = {"|cffB6CA00x|r "..MINUTES2..", |cffF6ADC6y|r "..SECONDS2.."", "|cffB6CA00x|r.|cffF6ADC6y|r "..MINUTES2},
-			get = "GetValue", set = "SetValue",
-		},
-		newline1 = {type = "description", order = 9, name = ""},
-		RecordInstance = {
-			type = "toggle", order = 10,
-			width = "full", descStyle = "",
-			name = " Record "..INSTANCE,
-			get = "GetValue", set = "SetValue",
-		},
-		executePrintInstanceTimer = {
-			type = "execute", order = 11,
-			descStyle = "",
-			name = "|cffFFFFFFInstance Data|r",
-			func = function()
-				wipe(tempList)
-				for k in pairs(char.timeInstanceList) do
-					tinsert(tempList, k)
-				end
-				sort(tempList)
-				for _, v in ipairs(tempList) do
-					print(v.." "..char.timeInstanceList[v])
-				end
-			end,
-			disabled = function() return not profile.RecordInstance end,
-		},
-	},
-}
-
-function KIT:GetValue(i)
-	return profile[i[#i]]
-end
-
-function KIT:SetValue(i, v)
-	profile[i[#i]] = v
-end
-
-function KIT:SetValueStopwatch(i, v)
-	profile[i[#i]] = v
-	ToggleStopwatch(IsStopwatch())
-	CalibrateStopwatch()
-end
-
-	----------------------
-	--- Initialization ---
-	----------------------
-
-function KIT:OnInitialize()
-	self.db = LibStub("AceDB-3.0"):New("kInstanceTimerDB", defaults, true)
-
-	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDB")
-	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDB")
-	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDB")
-	self:RefreshDB()
-
-	self.db.global.version = VERSION
-	self.db.global.build = BUILD
-
-	ACR:RegisterOptionsTable("kInstanceTimer_Main", options)
-	ACR:RegisterOptionsTable("kInstanceTimer_LibSink", self:GetSinkAce3OptionsDataTable())
-	ACR:RegisterOptionsTable("kInstanceTimer_Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db))
-	self.optionsFrame = ACD:AddToBlizOptions("kInstanceTimer_Main", NAME)
-	ACD:AddToBlizOptions("kInstanceTimer_LibSink", "|TINTERFACE\\ICONS\\inv_scroll_03:16:16:1:0"..cropped.."|t  LibSink", NAME)
-	ACD:AddToBlizOptions("kInstanceTimer_Profiles", "|TInterface\\Icons\\INV_Misc_Note_01:16:16:1:0"..cropped.."|t  "..L["Profiles"], NAME)
-
-	self:RegisterChatCommand("kit", "SlashCommand")
-	self:RegisterChatCommand("kinstance", "SlashCommand")
-	self:RegisterChatCommand("kinstancetimer", "SlashCommand")
-
-	char.timeInstanceList = char.timeInstanceList or {}
-end
-
-function KIT:OnEnable()
-	self:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE")
-	self:RegisterEvent("CHAT_MSG_SYSTEM")
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-
-	-- fallback/secondary events
-	self:RegisterEvent("LFG_PROPOSAL_SUCCEEDED")
-	self:RegisterEvent("LFG_COMPLETION_REWARD")
-
-	if GetNumPartyMembers() == 0 and GetNumRaidMembers() == 0 and not IsOnePersonParty() then
-		char.timeInstance, timeInstance2 = 0, nil
+function KIT:ReplaceArgs(msg, args)
+	-- new random messages init as nil
+	if not msg then return "" end
+	
+	for k in gmatch(msg, "%b<>") do
+		-- remove <>, make case insensitive
+		local s = strlower(gsub(k, "[<>]", ""))
+		
+		-- escape special characters
+		s = gsub(args[s] or s, "(%p)", "%%%1")
+		k = gsub(k, "(%p)", "%%%1")
+		
+		msg = msg:gsub(k, s)
 	end
-
-	-- initialize stopwatch
-	if IsStopwatch() then
-		CalibrateStopwatch()
-		ToggleStopwatch(true)
-	end
-end
-
-function KIT:RefreshDB()
-	profile, char = self.db.profile, self.db.char
-	self:SetSinkStorage(profile) -- LibSink
-end
-
-function KIT:SlashCommand()
-	InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
-end
-
-	-----------------
-	--- Callbacks ---
-	-----------------
-
-function KIT:TimetoString(value)
-	local seconds = mod(floor(value), 60)
-	local minutes = mod(floor(value/60), 60)
-	local hours = floor(value/3600)
-
-	local fseconds = bttn:GetText(bttn:SetFormattedText(D_SECONDS, seconds))
-	local fminutes = bttn:GetText(bttn:SetFormattedText(D_MINUTES, minutes))
-	local fhours = bttn:GetText(bttn:SetFormattedText(D_HOURS, hours))
-
-	if value >= 3600 then
-		return minutes > 0 and format("%s, %s", fhours, fminutes) or fhours
-	elseif value >= 60 then
-		if seconds >= 6 then
-			if profile.TimeFormat == 1 then
-				return format("%s, %s", fminutes, fseconds)
-			else
-				local xseconds = floor(seconds/6)
-				if xseconds == 1 then
-					-- problem: incorrectly returned as "x.1 minute"
-					return format("%s.%s %s", minutes, xseconds, MINUTES2)
-				else
-					return bttn:GetText(bttn:SetFormattedText(D_MINUTES2, minutes.."."..xseconds))
-				end
-			end
-		else
-			return fminutes
-		end
-	elseif value >= 0 then
-		return fseconds
-	else
-		return "ERROR: "..value
-	end
-end
-
-function KIT:AnnounceInstance(subZone)
-	self:Pour(self:ReplaceText(profile.instanceTimerMsg, subZone))
-end
-
-local cache = {}
-
-local function GetClassColor(class)
-	if cache[class] then
-		return cache[class]
-	else
-		local color = RAID_CLASS_COLORS[class]
-		cache[class] = format("%02X%02X%02X", color.r*255, color.g*255, color.b*255)
-		return cache[class]
-	end
-end
-
-local party = {}
-
--- Save Instance Timer data
-function KIT:RecordInstance(subZone)
-	subZone = subZone and ": "..subZone.."]" or "]"
-	wipe(party)
-	for i = 1, GetNumPartyMembers() do
-		local name, class = UnitName("party"..i), select(2, UnitClass("party"..i))
-		party[i] = format("|cff%s%s|r", GetClassColor(class), name)
-	end
-	-- this part might need to be rewritten, instead of saving stuff as formatted strings
-	char.timeInstanceList[format("%s-|cff71D5FF[%s]|r", char.timeInstanceStart2, date("%H:%M"))] = format("|cffADFF2F[%s%s|r in |cff71D5FF%s.|r %s", GetRealZoneText(), subZone, self:TimetoString(time() - char.timeInstance), strjoin(", ", unpack(party)))
-end
-
-	-----------------------
-	--- Substitute Text ---
-	-----------------------
-
-function KIT:ReplaceText(msg, subZone, isExample)
-	if not msg then return "[ERROR] No Message" end
-
-	if isExample then
-		local instanceType = select(2, IsInInstance())
-		msg = msg:gsub("%[[Ii][Nn][Ss][Tt][Aa][Nn][Cc][Ee]%]", "|cffA8A8FF"..GetRealZoneText().."|r")
-		msg = msg:gsub("%[[Tt][Ii][Mm][Ee]%]", "|cff71D5FF"..self:TimetoString(char.timeInstance > 0 and time() - char.timeInstance or 0).."|r")
-		msg = msg:gsub("%[[Ss][Tt][Aa][Rr][Tt]%]", "|cffF6ADC6"..(char.timeInstance > 0 and char.timeInstanceStart or date("%H:%M")).."|r")
-		msg = msg:gsub("%[[Ee][Nn][Dd]%]", "|cffADFF2F"..date("%H:%M").."|r")
-		msg = msg:gsub("%[[Dd][Aa][Tt][Ee]%]", "|cff0070DD"..date("%m/%d/%y").."|r")
-		msg = msg:gsub("%[[Dd][Aa][Tt][Ee]2%]", "|cff0070DD"..date("%Y.%m.%d").."|r")
-	else
-		if subZone then subZone = ": "..subZone else subZone = "" end
-		msg = msg:gsub("%[[Ii][Nn][Ss][Tt][Aa][Nn][Cc][Ee]%]", GetRealZoneText()..subZone)
-		msg = msg:gsub("%[[Tt][Ii][Mm][Ee]%]", self:TimetoString(time() - (timeInstance2 or char.timeInstance)))
-		msg = msg:gsub("%[[Ss][Tt][Aa][Rr][Tt]%]", char.timeInstanceStart)
-		msg = msg:gsub("%[[Ee][Nn][Dd]%]", date("%H:%M"))
-		msg = msg:gsub("%[[Dd][Aa][Tt][Ee]%]", date("%m/%d/%y"))
-		msg = msg:gsub("%[[Dd][Aa][Tt][Ee]2%]", date("%Y.%m.%d"))
-	end
+	wipe(args)
 	return msg
 end
 
 	--------------
-	--- Events ---
+	--- Record ---
 	--------------
 
-function KIT:CHAT_MSG_CHANNEL_NOTICE(event, msg)
-	if msg == "YOU_CHANGED" then
-		local instanceType = select(2, IsInInstance())
-		if pve[instanceType] then
-			-- 6 hours deadline
-			if char.timeInstance == 0 or time() > char.timeInstance + 21600 then
-				char.timeInstance, char.timeInstanceStart, char.timeInstanceStart2 = time(), date("%H:%M"), date("%Y.%m.%d |cffF6ADC6[%H:%M]|r")
-			end
-			if IsStopwatch() then
-				StopwatchStart()
-				CalibrateStopwatch()
-			end
-		elseif pvp[instanceType] and profile.BattlegroundStopwatch then
-			StopwatchStart()
-			-- delay registering for UPDATE_BATTLEFIELD_STATUS, because it fires at the start/end of a battleground, and we only want to react at the end
-			self:ScheduleTimer(function()
-				self:RegisterEvent("UPDATE_BATTLEFIELD_STATUS")
-				CalibrateStopwatch()
-			end, 10)
-		elseif instanceType == "none" and char.timeInstance == 0 then
-			lastTimeInst, lastTimeBG = nil, nil
-			if profile.InstanceStopwatch or profile.RaidStopwatch or profile.BattlegroundStopwatch then
-				StopwatchEnd()
-			end
+do
+	local party = {}
+
+	-- Save Instance Timer data
+	function KIT:Record(subZone)
+		wipe(party)
+		
+		for i = 1, GetNumPartyMembers() do
+			local name, realm = UnitName("party"..i)
+			local class = select(2, UnitClass("party"..i))
+			party[i] = {name, realm or GetRealmName(), class}
 		end
+		
+		tinsert(char.TimeInstanceList, {
+			date = char.startDate,
+			start = char.startTime,
+			["end"] = date("%H:%M"),
+			zone = self:Zone()..(subZone and ": "..subZone or ""),
+			time = time() - char.timeInstance,
+			party = party,
+		})
 	end
 end
-
-function KIT:CHAT_MSG_SYSTEM(event, msg)
-	-- left or kicked from group
-	if msg == ERR_LEFT_GROUP_YOU or msg == ERR_UNINVITE_YOU then
-		char.timeInstance, timeInstance2 = 0, nil
-		if IsStopwatch() then
-			StopwatchEnd()
-		end
-	end
-end
-
-function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, subevent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, ...)
-	if subevent == "UNIT_DIED" and tonumber(strsub(destGUID, 5, 5)) == 3 and (timeInstance2 or char.timeInstance) then
-		local destNPC = tonumber(strsub(destGUID, 7, 10), 16)
-		if BossIDs[destNPC] or RaidBossIDs[destNPC] then
-			-- damn you, cookie!
-			if destNPC == 47739 and GetInstanceDifficulty() == 2 then return end
-
-			-- Record
-			local subZone = SubZoneBossIDs[destNPC] or SubRaidZoneBossIDs[destNPC]
-			if profile.RecordInstance then
-				self:RecordInstance(subZone)
-			end
-			-- Announce
-			if (profile.Instance and BossIDs[destNPC]) or (profile.Raid and RaidBossIDs[destNPC]) then
-				self:AnnounceInstance(subZone)
-			end
-			-- Stopwatch
-			local instanceType = select(2, IsInInstance())
-			if IsStopwatch() then
-				Stopwatch_Pause()
-			end
-
-			-- pre-boss in a subzone
-			if preBossIDs[destNPC] then
-				timeInstance2 = char.timeInstance
-			-- final boss in a subzone
-			elseif finalBossIDs[destNPC] then
-				timeInstance2 = 0
-			end
-			-- pause LibDataBroker display 
-			local startTime = timeInstance2 or char.timeInstance
-			lastTimeInst = startTime > 0 and time() - startTime or 0
-			-- reset variables
-			char.timeInstance, char.timeInstanceStart, char.timeInstanceStart2 = 0, "", ""
-		end
-	end
-end
-
-function KIT:UPDATE_BATTLEFIELD_STATUS()
-	local runTime = GetBattlefieldInstanceRunTime()
-	if runTime and runTime > 0 then
-		if profile.BattlegroundStopwatch then
-			-- battleground finished; recalibrate Stopwatch
-			StopwatchTicker.timer = runTime / 1000
-			StopwatchTicker_Update()
-			Stopwatch_Pause()
-		end
-		lastTimeBG = runTime / 1000
-		self:UnregisterEvent("UPDATE_BATTLEFIELD_STATUS")
-	end
-end
-
-	------------------------
-	--- Secondary Events ---
-	------------------------
-
-function KIT:LFG_PROPOSAL_SUCCEEDED()
-	self:ScheduleTimer(function()
-		-- backup timer
-		if char.timeInstance == 0 then
-			char.timeInstance = time()
-			char.timeInstanceStart, char.timeInstanceStart2 = date("%H:%M"), date("%Y.%m.%d |cffF6ADC6[%H:%M]|r")
-			if IsStopwatch() then
-				StopwatchStart()
-			end
-		end
-	end, 30)
-end
-
--- only fires after completing a random dungeon
--- delay it a bit, so it doesn't react on the same time as boss death
-function KIT:LFG_COMPLETION_REWARD()
-	self:ScheduleTimer(function()
-		if char.timeInstance > 0 then
-			if profile.RecordInstance then
-				self:RecordInstance()
-			end
-			if profile.Instance or profile.Raid then
-				self:AnnounceInstance()
-			end
-			if IsStopwatch() then
-				Stopwatch_Pause()
-			end
-		end
-		local startTime = timeInstance2 or char.timeInstance
-		lastTimeInst = startTime > 0 and time() - startTime or 0
-		char.timeInstance, char.timeInstanceStart, char.timeInstanceStart2 = 0, "", ""
-	end, 1)
-end
-
-	---------------------
-	--- LibDataBroker ---
-	---------------------
-
-local dataobject = {
-	type = "data source",
-	icon = "Interface\\Icons\\Spell_Holy_BorrowedTime",
-	OnClick = function(clickedframe, button)
-		if InterfaceOptionsFrame:IsShown() and InterfaceOptionsFramePanelContainer.displayedPanel.name == NAME then
-			InterfaceOptionsFrame:Hide()
-		else
-			InterfaceOptionsFrame_OpenToCategory(KIT.optionsFrame)
-		end
-	end,
-	OnTooltipShow = function(tt)
-		tt:AddLine("|cffADFF2F"..NAME.."|r")
-		tt:AddLine("|cffFFFFFFClick|r to open the options menu")
-	end,
-}
-
-local function MilitaryTime(value)
-	local seconds = mod(floor(value), 60)
-	local minutes = mod(floor(value/60), 60)
-	local hours = floor(value/3600)
-	if hours > 0 then
-		return format("%s:%02.f:%02.f", hours, minutes, seconds)
-	else
-		return format("%02.f:%02.f", minutes, seconds)
-	end
-end
-
-KIT:ScheduleRepeatingTimer(function()
-	local runTime = GetBattlefieldInstanceRunTime()
-	if runTime > 0 then
-		dataobject.text = MilitaryTime(lastTimeBG and lastTimeBG or runTime/1000)
-	elseif lastTimeInst or char.timeInstance > 0 then
-		local startTime = timeInstance2 or char.timeInstance
-		dataobject.text = MilitaryTime(lastTimeInst and lastTimeInst or startTime > 0 and time() - startTime or 0)
-	else
-		dataobject.text = MilitaryTime(0)
-	end
-end, 1)
-
-LibStub("LibDataBroker-1.1"):NewDataObject("kInstanceTimer", dataobject)
