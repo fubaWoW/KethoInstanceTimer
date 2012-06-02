@@ -75,7 +75,7 @@ function KIT:OnEnable()
 	
 	-- initialize stopwatch while in an instance
 	if S.IsStopwatch() then
-		S.StopwatchStart(v)
+		S.StopwatchStart()
 	end
 end
 

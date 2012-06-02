@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.4 [2012.06.01]			---
+--- Version: 0.5 [2012.06.02]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -10,7 +10,7 @@
 -- To Do: new record time
 
 local NAME, S = ...
-S.VERSION = 0.4
+S.VERSION = 0.5
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -379,7 +379,7 @@ function KIT:InstanceText(subZone, isPreview)
 		args.instance = "|cffA8A8FF"..self:Zone().."|r"
 		args.time = "|cff71D5FF"..self:Time(instanceTime > 0 and time() - instanceTime or exampleTime).."|r"
 		args.start = "|cffF6ADC6"..(instanceTime > 0 and char.startTime or date("%H:%M")).."|r"
-		args["end"] = "|cffADFF2F"..date("%H:%M").."|r" -- can't use keywords as a table key o_O
+		args["end"] = "|cffADFF2F"..date("%H:%M", time() + exampleTime).."|r" -- can't use keywords as a table key o_O
 		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
 		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
 	else

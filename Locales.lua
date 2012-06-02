@@ -25,6 +25,7 @@ local L = {
 	enUS = {
 		INSTANCE_TIMER = INSTANCE.." Timer",
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] cleared in <TIME> [<START>]-[<END>]",
+		
 		DATA = "Data",
 		RECORD_INSTANCE = "Record "..INSTANCE,
 		
@@ -35,6 +36,9 @@ local L = {
 		TIME_OMIT_SECONDS = "Omit "..SECONDS,
 		TIME_LOWER_CASE = "Lower Case",
 		TIME_ABBREVIATE = "Abbreviate",
+		
+		MANUAL_START = TRACKER_SORT_MANUAL.." "..START,
+		MANUAL_RESET = TRACKER_SORT_MANUAL.." "..RESET,
 		
 		BROKER_CLICK = "|cffFFFFFFClick|r to open the options menu",
 		

@@ -185,6 +185,18 @@ S.options = {
 						},
 					},
 				},
+				ManualStart = {
+					type = "execute", order = 2,
+					descStyle = "", confirm = true,
+					name = L.MANUAL_START,
+					func = "StartData",
+				},
+				ManualEnd = {
+					type = "execute", order = 3,
+					descStyle = "", confirm = true,
+					name = L.MANUAL_RESET,
+					func = function() KIT:ResetTime(true) end,
+				},
 			},
 		},
 	},
@@ -299,6 +311,10 @@ function KIT:DataFrame()
 		realm:SetPoint("BOTTOMLEFT", 8, 7)
 		realm.text:SetText(REALM)
 		
+		-- optional changes
+		realm.text:SetFont("Fonts\\FRIZQT__.TTF", 16)
+		realm.text:SetSize(60, 10)
+		
 		realm:SetChecked(profile.Realm)
 		realm:SetScript("OnClick", function(self, button)
 			profile.Realm = self:GetChecked()
@@ -346,6 +362,7 @@ do
 		
 		for i = #char.TimeInstanceList, 1, -1 do
 			local l = char.TimeInstanceList[i]
+			wipe(t[3]) -- wipe (previous) party
 			
 			for j, v in ipairs(l.party) do
 				if profile.Realm then
