@@ -105,13 +105,18 @@ S.options = {
 						end
 					end,
 				},
-				RecordInstance = {
+				Screenshot = {
 					type = "toggle", order = 6,
+					width = "full", descStyle = "",
+					name = "|TInterface\\Icons\\inv_misc_spyglass_03:16:16:1:0"..crop.."|t  "..BINDING_NAME_SCREENSHOT,
+				},
+				RecordInstance = {
+					type = "toggle", order = 7,
 					width = "full", descStyle = "",
 					name = "|TInterface\\Icons\\Trade_Engineering:16:16:1:0"..crop.."|t  "..L.RECORD_INSTANCE,
 				},
 				Data = {
-					type = "execute", order = 7,
+					type = "execute", order = 8,
 					descStyle = "",
 					name = "|TInterface\\Icons\\INV_Misc_Note_01:16:16:1:-1"..crop.."|t  |cffFFFFFF"..L.DATA.."|r",
 					func = "DataFrame",
@@ -191,8 +196,9 @@ S.options = {
 					name = L.MANUAL_START,
 					func = "StartData",
 				},
+				newline1 = {type = "description", order = 3, name = ""},
 				ManualEnd = {
-					type = "execute", order = 3,
+					type = "execute", order = 4,
 					descStyle = "", confirm = true,
 					name = L.MANUAL_RESET,
 					func = function() KIT:ResetTime(true) end,
@@ -341,6 +347,7 @@ end
 
 do
 	local t = {}
+	local realm = GetRealmName()
 
 	function KIT:GetData()
 		for i = 1, 4 do
@@ -362,18 +369,19 @@ do
 		
 		for i = #char.TimeInstanceList, 1, -1 do
 			local l = char.TimeInstanceList[i]
-			wipe(t[3]) -- wipe (previous) party
 			
 			for j, v in ipairs(l.party) do
 				if profile.Realm then
-					t[3][j] = format("|cff%s%s|r-%s", S.classCache[v[3]], v[1], v[2])
+					t[3][j] = format("|cff%s%s|r-%s", S.classCache[v[3]], v[1], (v[2] == realm) and "|cff3FBF3F"..v[2].."|r" or v[2])
 				else
 					t[3][j] = format("|cff%s%s|r", S.classCache[v[3]], v[1])
 				end
 			end
 			
-			tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cffA8A8FF[%s]|r %s %s",
+			tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cffA8A8FF[%s]|r %s - %s",
 				l.date, l.start, l["end"], l.zone, self:Time(l.time), strjoin(", ", unpack(t[3]))))
+				
+			wipe(t[3]) -- wipe for next iteration
 		end
 		
 		local legacy = IsLegacy() and "\n\n"..strjoin("\n", unpack(t[2])) or ""

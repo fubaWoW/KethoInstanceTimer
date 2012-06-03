@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.5 [2012.06.02]			---
+--- Version: 0.6 [2012.06.03]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -10,7 +10,7 @@
 -- To Do: new record time
 
 local NAME, S = ...
-S.VERSION = 0.5
+S.VERSION = 0.6
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -419,26 +419,23 @@ end
 	--- Record ---
 	--------------
 
-do
+-- Save Instance Timer data
+function KIT:Record(subZone)
+	-- tried recycling "party" and that was kinda dumb of me
 	local party = {}
-
-	-- Save Instance Timer data
-	function KIT:Record(subZone)
-		wipe(party)
-		
-		for i = 1, GetNumPartyMembers() do
-			local name, realm = UnitName("party"..i)
-			local class = select(2, UnitClass("party"..i))
-			party[i] = {name, realm or GetRealmName(), class}
-		end
-		
-		tinsert(char.TimeInstanceList, {
-			date = char.startDate,
-			start = char.startTime,
-			["end"] = date("%H:%M"),
-			zone = self:Zone()..(subZone and ": "..subZone or ""),
-			time = time() - char.timeInstance,
-			party = party,
-		})
+	
+	for i = 1, GetNumPartyMembers() do
+		local name, realm = UnitName("party"..i)
+		local class = select(2, UnitClass("party"..i))
+		party[i] = {name, realm or GetRealmName(), class}
 	end
+	
+	tinsert(char.TimeInstanceList, {
+		date = char.startDate,
+		start = char.startTime,
+		["end"] = date("%H:%M"),
+		zone = self:Zone()..(subZone and ": "..subZone or ""),
+		time = time() - char.timeInstance,
+		party = party,
+	})
 end

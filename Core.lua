@@ -34,7 +34,7 @@ function KIT:OnInitialize()
 	
 	ACR:RegisterOptionsTable(NAME, S.options)
 	ACD:AddToBlizOptions(NAME, NAME)
-	ACD:SetDefaultSize(NAME, 550, 380)
+	ACD:SetDefaultSize(NAME, 550, 410)
 	
 	----------------------
 	--- Slash Commands ---
@@ -167,6 +167,12 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 				Stopwatch_Pause()
 			end
 			
+			if profile.Screenshot then
+				self:ScheduleTimer(function()
+					Screenshot()
+				end, 1)
+			end
+			
 			-- pre-boss in a subzone
 			if S.PreBossIDs[destNPC] then
 				S.backupInstance = char.timeInstance
@@ -221,6 +227,12 @@ function KIT:LFG_COMPLETION_REWARD()
 			
 			if S.IsStopwatch() then
 				Stopwatch_Pause()
+			end
+			
+			if profile.Screenshot then
+				self:ScheduleTimer(function()
+					Screenshot()
+				end, 1)
 			end
 			
 			-- pause LibDataBroker display 

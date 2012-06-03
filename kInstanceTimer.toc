@@ -1,5 +1,5 @@
 ## Interface: 40300
-## Version: 0.5
+## Version: 0.6
 ## Title: kInstanceTimer
 ## Notes: Instance Timer
 ## Author: Ketho @ EU-Boulderfist
