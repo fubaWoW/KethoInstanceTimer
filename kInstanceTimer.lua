@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.6 [2012.06.03]			---
+--- Version: 0.7 [2012.06.05]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -10,7 +10,7 @@
 -- To Do: new record time
 
 local NAME, S = ...
-S.VERSION = 0.6
+S.VERSION = 0.7
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -50,9 +50,15 @@ S.events = {
 	--- Instance Types ---
 	----------------------
 
+-- also used for color
 S.pve = {
-	party = true,
-	raid = true,
+	party = "A8A8FF",
+	raid = "FF7F00",
+}
+
+S.pvediff = {
+	party = "PLAYER_DIFFICULTY",
+	raid = "RAID_DIFFICULTY",
 }
 
 S.pvp = {
@@ -424,10 +430,13 @@ function KIT:Record(subZone)
 	-- tried recycling "party" and that was kinda dumb of me
 	local party = {}
 	
-	for i = 1, GetNumPartyMembers() do
-		local name, realm = UnitName("party"..i)
-		local class = select(2, UnitClass("party"..i))
-		party[i] = {name, realm or GetRealmName(), class}
+	-- don't record (party) members for raid instances
+	if not GetNumRaidMembers() > 0 then
+		for i = 1, GetNumPartyMembers() do
+			local name, realm = UnitName("party"..i)
+			local class = select(2, UnitClass("party"..i))
+			party[i] = {name, realm or GetRealmName(), class}
+		end
 	end
 	
 	tinsert(char.TimeInstanceList, {
@@ -435,6 +444,8 @@ function KIT:Record(subZone)
 		start = char.startTime,
 		["end"] = date("%H:%M"),
 		zone = self:Zone()..(subZone and ": "..subZone or ""),
+		instanceType = select(2, IsInInstance()),
+		difficulty = GetInstanceDifficulty(),
 		time = time() - char.timeInstance,
 		party = party,
 	})

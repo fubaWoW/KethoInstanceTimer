@@ -229,7 +229,7 @@ end
 function KIT:DataFrame()
 	if not kInstanceTimerData then
 		local f = CreateFrame("Frame", "kInstanceTimerData", UIParent, "DialogBoxFrame")
-		f:SetPoint("CENTER"); f:SetSize(900, 500)
+		f:SetPoint("CENTER"); f:SetSize(1000, 500)
 		
 		f:SetBackdrop({
 			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -316,14 +316,26 @@ function KIT:DataFrame()
 		local realm = CreateFrame("CheckButton", nil, kInstanceTimerData, "UICheckButtonTemplate")
 		realm:SetPoint("BOTTOMLEFT", 8, 7)
 		realm.text:SetText(REALM)
-		
-		-- optional changes
 		realm.text:SetFont("Fonts\\FRIZQT__.TTF", 16)
-		realm.text:SetSize(60, 10)
 		
 		realm:SetChecked(profile.Realm)
 		realm:SetScript("OnClick", function(self, button)
 			profile.Realm = self:GetChecked()
+			eb:SetText(KIT:GetData())
+		end)
+		
+	------------------
+	--- Difficulty ---
+	------------------
+		
+		local diff = CreateFrame("CheckButton", nil, kInstanceTimerData, "UICheckButtonTemplate")
+		diff:SetPoint("BOTTOMLEFT", 140, 7)
+		diff.text:SetText(DUNGEON_DIFFICULTY)
+		diff.text:SetFont("Fonts\\FRIZQT__.TTF", 16)
+		
+		diff:SetChecked(profile.Difficulty)
+		diff:SetScript("OnClick", function(self, button)
+			profile.Difficulty = self:GetChecked()
 			eb:SetText(KIT:GetData())
 		end)
 		
@@ -378,9 +390,19 @@ do
 				end
 			end
 			
-			tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cffA8A8FF[%s]|r %s - %s",
-				l.date, l.start, l["end"], l.zone, self:Time(l.time), strjoin(", ", unpack(t[3]))))
-				
+			-- instanceType and difficulty data were added in v0.7
+			local instanceColor = S.pve[l.instanceType or "party"]
+			
+			if profile.Difficulty and l.difficulty then
+				-- but what about Raid Finder?
+				local diff = _G[S.pvediff[l.instanceType or "party"]..l.difficulty]
+				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r |cffFFFF00%s|r - %s - %s",
+					l.date, l.start, l["end"], instanceColor, l.zone, diff, self:Time(l.time), strjoin(", ", unpack(t[3]))))
+			else
+				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r %s - %s",
+					l.date, l.start, l["end"], instanceColor, l.zone, self:Time(l.time), strjoin(", ", unpack(t[3]))))
+			end
+			
 			wipe(t[3]) -- wipe for next iteration
 		end
 		
