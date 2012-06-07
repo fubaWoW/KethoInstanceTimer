@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.7.1 [2012.06.05]			---
+--- Version: 0.7.2 [2012.06.07]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -10,7 +10,7 @@
 -- To Do: new record time
 
 local NAME, S = ...
-S.VERSION = "0.7.1"
+S.VERSION = "0.7.2"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -220,6 +220,10 @@ function KIT:StartData()
 	
 	char.startDate = date("%Y.%m.%d")
 	char.startTime = date("%H:%M")
+	
+	-- reset so broker can start counting again
+	S.backupInstance = nil
+	S.LastInst = nil	
 end
 
 function KIT:ResetTime(isLeave)
