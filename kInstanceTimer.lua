@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.7.2 [2012.06.07]			---
+--- Version: 0.7.3 [2012.06.23]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -10,7 +10,7 @@
 -- To Do: new record time
 
 local NAME, S = ...
-S.VERSION = "0.7.2"
+S.VERSION = "0.7.3"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -26,7 +26,7 @@ function KIT:RefreshDB1()
 end
 
 local date, time = date, time
-local floor, mod = floor, mod
+local floor = floor
 local format, gsub = format, gsub 
 
 S.args = {}
@@ -90,6 +90,7 @@ S.BossIDs = { -- Instance Timer
 	[9019] = true, -- Emperor Dagran Thaurissan; Blackrock Depths: Upper City
 	[9568] = true, -- Overlord Wyrmthalak; Lower Blackrock Spire
 	[10813] = true, -- Balnazzar; Stratholme: Main Gate
+	[10363] = true, -- General Drakkisath; Upper Blackrock Spire
 	[11486] = true, -- Prince Tortheldrin; Dire Maul: Capital Gardens
 	[11492] = true, -- Alzzin the Wildshaper; Dire Maul: Warpwood Quarter
 	[11501] = true, -- King Gordok; Dire Maul: Gordok Commons
