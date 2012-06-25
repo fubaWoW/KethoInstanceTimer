@@ -147,20 +147,25 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	
 	if subevent == "UNIT_DIED" and strsub(destGUID, 5, 5) == "3" then
 		local destNPC = tonumber(strsub(destGUID, 7, 10), 16)
-		if (S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]) and self:GetInstanceTime() > 0 then
+		local id = S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]
+		if id and self:GetInstanceTime() > 0 then
 			
 			-- damn you, cookie!
 			if destNPC == 47739 and GetInstanceDifficulty() == 2 then return end
-
+			
+			-- exceptions/overrides
+			local special = (type(id) == "string") and id
+			local seasonal = S.Seasonal[destNPC]
+			
 			-- Record
 			local subZone = S.SubZoneBossIDs[destNPC] or S.SubRaidZoneBossIDs[destNPC]
 			if profile.RecordInstance then
-				self:Record(subZone)
+				self:Record(subZone, special, seasonal)
 			end
 			
 			-- Report
 			if (profile.Instance and S.BossIDs[destNPC]) or (profile.Raid and S.RaidBossIDs[destNPC]) then
-				self:Pour(self:InstanceText(subZone))
+				self:Pour(self:InstanceText(subZone, nil, special))
 			end
 			
 			if profile.Stopwatch then
@@ -243,4 +248,17 @@ function KIT:LFG_COMPLETION_REWARD()
 			self:ResetTime()
 		end
 	end, 1)
+end
+
+	---------------------
+	--- Reset by User ---
+	---------------------
+
+-- dunno how to find a string consisting of 2 words, with just %s
+local INSTANCE_RESET_SUCCESS = INSTANCE_RESET_SUCCESS:gsub("%%s", "")
+
+function KIT:CHAT_MSG_SYSTEM(event, msg)
+	if strfind(msg, INSTANCE_RESET_SUCCESS) then
+		self:ResetTime(true)
+	end
 end

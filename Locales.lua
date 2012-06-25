@@ -66,9 +66,19 @@ local L = {
 		["Main Gate"] = "Main Gate",
 		["Service Entrance"] = "Service Entrance",
 		
+		-- Blackrock Spire
+		["Lower Blackrock Spire"] = "Lower Blackrock Spire",
+		["Upper Blackrock Spire"] = "Upper Blackrock Spire",
+		
 		-- Dragon Soul (4.3)
 		["The Siege of Wyrmrest Temple"] = "The Siege of Wyrmrest Temple",
 		["Fall of Deathwing"] = "Fall of Deathwing",
+		
+		-- Seasonal
+		["The Headless Horseman"] = "The Headless Horseman",
+		["Coren Direbrew"] = "Coren Direbrew",
+		["The Frost Lord Ahune"] = "The Frost Lord Ahune",
+		["The Crown Chemical Co."] = "The Crown Chemical Co.",
 	},
 	esES = {
 	},

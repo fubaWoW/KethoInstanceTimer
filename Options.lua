@@ -360,7 +360,7 @@ end
 do
 	local t = {}
 	local realm = GetRealmName()
-
+	
 	function KIT:GetData()
 		for i = 1, 4 do
 			t[i] = t[i] or {}
@@ -384,22 +384,23 @@ do
 			
 			for j, v in ipairs(l.party) do
 				if profile.Realm then
-					t[3][j] = format("|cff%s%s|r-%s", S.classCache[v[3]], v[1], (v[2] == realm) and "|cff3FBF3F"..v[2].."|r" or v[2])
+					t[3][j] = format("|cff%s%s|r-%s", S.classCache[v[3]], v[1], (v[2] == realm) and "|cffADFF2F"..v[2].."|r" or v[2])
 				else
 					t[3][j] = format("|cff%s%s|r", S.classCache[v[3]], v[1])
 				end
 			end
+			local partyformat = next(t[3]) and " - %s" or "%s"
 			
 			-- instanceType and difficulty data were added in v0.7
 			local instanceColor = S.pve[l.instanceType or "party"]
 			
 			if profile.Difficulty and l.difficulty then
-				-- but what about Raid Finder?
-				local diff = _G[S.pvediff[l.instanceType or "party"]..l.difficulty]
-				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r |cffFFFF00%s|r - %s - %s",
+				-- check for Raid Finder first (boolean true)
+				local diff = (l.instanceType == "seasonal") and NOT_APPLICABLE or (l.difficulty == true) and PLAYER_DIFFICULTY3 or _G[S.pvediff[l.instanceType or "party"]..l.difficulty]
+				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r |cffFFFF00%s|r - %s"..partyformat,
 					l.date, l.start, l["end"], instanceColor, l.zone, diff, self:Time(l.time), strjoin(", ", unpack(t[3]))))
 			else
-				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r %s - %s",
+				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r %s"..partyformat,
 					l.date, l.start, l["end"], instanceColor, l.zone, self:Time(l.time), strjoin(", ", unpack(t[3]))))
 			end
 			

@@ -2,15 +2,17 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.7.3 [2012.06.23]			---
+--- Version: 0.8.0 [2012.06.25]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
 
--- To Do: new record time
+-- To Do:
+-- * new record time
+-- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "0.7.3"
+S.VERSION = "0.8.0"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -44,6 +46,9 @@ S.events = {
 	-- fallback/secondary events
 	"LFG_PROPOSAL_SUCCEEDED",
 	"LFG_COMPLETION_REWARD",
+	
+	-- RESET_INSTANCES button / ResetInstances()
+	"CHAT_MSG_SYSTEM",
 }
 
 	----------------------
@@ -54,6 +59,7 @@ S.events = {
 S.pve = {
 	party = "A8A8FF",
 	raid = "FF7F00",
+	seasonal = "FFD700", -- imaginary instance type
 }
 
 S.pvediff = {
@@ -71,7 +77,7 @@ S.pvp = {
 	----------------
 
 S.BossIDs = { -- Instance Timer
---	[01-60] Classic
+	-- [1-60] Classic
 	[1853] = true, -- Darkmaster Gandling; Scholomance
 	[2748] = true, -- Archaedas; Uldaman
 	[3975] = true, -- Herod; Scarlet Monastery: Armory
@@ -88,9 +94,10 @@ S.BossIDs = { -- Instance Timer
 	[7800] = true, -- Mekgineer Thermaplugg; Gnomeregan
 	[9018] = true, -- High Interrogator Gerstahn; Blackrock Depths: Prison
 	[9019] = true, -- Emperor Dagran Thaurissan; Blackrock Depths: Upper City
-	[9568] = true, -- Overlord Wyrmthalak; Lower Blackrock Spire
+	-- Blackrock Spire doesn't return the instance's name as the zone name
+	[9568] = L["Lower Blackrock Spire"], -- Overlord Wyrmthalak; Lower Blackrock Spire
+	[10363] = L["Upper Blackrock Spire"], -- General Drakkisath; Upper Blackrock Spire
 	[10813] = true, -- Balnazzar; Stratholme: Main Gate
-	[10363] = true, -- General Drakkisath; Upper Blackrock Spire
 	[11486] = true, -- Prince Tortheldrin; Dire Maul: Capital Gardens
 	[11492] = true, -- Alzzin the Wildshaper; Dire Maul: Warpwood Quarter
 	[11501] = true, -- King Gordok; Dire Maul: Gordok Commons
@@ -104,7 +111,7 @@ S.BossIDs = { -- Instance Timer
 	[47739] = true, -- "Captain" Cookie; Deadmines (Normal)
 	[49541] = true, -- Vanessa VanCleef; Deadmines (Heroic)
 
---	[60-70] The Burning Crusade
+	-- [60-70] The Burning Crusade
 	[16808] = true, -- Warchief Kargath Bladefist; Hellfire Citadel: The Shattered Halls
 	[17377] = true, -- Keli'dan the Breaker; Hellfire Citadel: The Blood Furnace
 --	[17536] = true, -- [Old] Nazan; Hellfire Citadel: Hellfire Ramparts
@@ -122,7 +129,7 @@ S.BossIDs = { -- Instance Timer
 	[19220] = true, -- Pathaleon the Calculator; Tempest Keep: The Mechanar
 	[20912] = true, -- Harbinger Skyriss; Tempest Keep: The Arcatraz
 
---	[70-80] Wrath of the Lich King
+	-- [70-80] Wrath of the Lich King
 	[26632] = true, -- The Prophet Tharon'ja; Drak'Tharon Keep (name has an extra space at the end when transformed] = true, GUID remains unchanged though)
 	[26723] = true, -- Keristrasza; The Nexus: The Nexus
 	[26861] = true, -- King Ymiron; Utgarde Keep: Utgarde Pinnacle
@@ -140,7 +147,7 @@ S.BossIDs = { -- Instance Timer
 --	[35451] = true, -- The Black Knight; Crusaders' Coliseum: Trial of the Champion (dies 3x)
 --	[36954] = true, -- The Lich King; Icecrown Citadel: Halls of Reflection (no death)
 
---	[80-85] Cataclysm
+	-- [80-85] Cataclysm
 	[39705] = true, -- Ascendant Lord Obsidius; Blackrock Caverns
 	[39378] = true, -- Rajh; Halls of Origination
 	[40484] = true, -- Erudax; Grim Batol
@@ -156,6 +163,18 @@ S.BossIDs = { -- Instance Timer
 	[54938] = true, -- Archbishop Benedictus; Hour of Twilight
 }
 
+S.Seasonal = {
+	[23682] = L["The Headless Horseman"], -- "Headless Horseman", Hallow's End
+	[23872] = L["Coren Direbrew"], -- "Coren Direbrew", Brewfest
+	[25740] = L["The Frost Lord Ahune"], -- "Ahune", Midsummer Fire Festival
+	[36296] = L["The Crown Chemical Co."], -- "Apothecary Hummel", Love is in the Air
+}
+
+-- copy seasonal into boss ids, so we can still differentiate between them
+for k, v in pairs(S.Seasonal) do
+	S.BossIDs[k] = v
+end
+
 S.PreBossIDs = {
 	[12236] = true, -- Lord Vyletongue
 	[12258] = true, -- Razorlash
@@ -163,7 +182,6 @@ S.PreBossIDs = {
 	[10813] = true, -- Balnazzar
 }
 
--- superfluous?
 S.FinalBossIDs = {
 	[12201] = true, -- Princess Theradras
 	[9019] = true, -- Emperor Dagran Thaurissan
@@ -171,24 +189,52 @@ S.FinalBossIDs = {
 }
 
 S.RaidBossIDs = { -- untested
-	[52363] = true, -- Occu'thar; Baradin Hold
-	[43324] = true, -- Cho'gall; The Bastion of Twilight
+	-- [1-60] Classic
+	[11502] = true, -- Ragnaros; Molten Core
+	[11583] = true, -- Nefarian; Blackwing Lair
+	[15339] = true, -- Ossirian the Unscarred; Ruins of Ahn'Qiraj
+	[15727] = true, -- C'Thun; Temple of Ahn'Qiraj
+	
+	-- [60-70] The Burning Crusade
+	[15690] = true, -- Prince Malchezaar; Karazhan
+	[17257] = true, -- Magtheridon; Hellfire Citadel: Magtheridon's Lair
+	[17968] = true, -- Archimonde; Caverns of Time: Hyjal Summit
+	[19044] = true, -- Gruul the Dragonkiller; Gruul's Lair
+	[19622] = true, -- Kael'thas Sunstrider; Tempest Keep: The Eye
+	[21212] = true, -- Lady Vashj; Coilfang Reservoir: Serpentshrine Cavern
+	[22917] = true, -- Illidan Stormrage; Black Temple
+	[25315] = true, -- Kil'jaeden; Sunwell Plateau
+	
+	-- [70-80] Wrath of the Lich King
+	[10184] = true, -- Onyxia; Onyxia's Lair
+	[15990] = true, -- Kel'Thuzad; Naxxramas
+	[28859] = true, -- Malygos; The Nexus: The Eye of Eternity
+	[28860] = true, -- Sartharion; Wyrmrest Temple: The Obsidian Sanctum
+	[33288] = true, -- Yogg-Saron; Ulduar
+	[34564] = true, -- Anub'arak; Crusaders' Coliseum: Trial of the Crusader
+	[36597] = true, -- The Lich King; Icecrown Citadel
+	[38433] = true, -- Toravon the Ice Watcher; Vault of Archavon
+	[39863] = true, -- Halion; Wyrmrest Temple: The Ruby Sanctum
+	
+	-- [80-85] Cataclysm
 	[41376] = true, -- Nefarian; Blackwing Descent
+	[43324] = true, -- Cho'gall; The Bastion of Twilight
 	[46753] = true, -- Al'Akir; Throne of the Four Winds
+	[52363] = true, -- Occu'thar; Baradin Hold
 	[52409] = true, -- Ragnaros; Firelands
-	[55689] = true, -- Hagara the Stormbinder; Dragon Soul
-	[56173] = true, -- Deathwing; Dragon Soul (not sure if this one works)
+	[55689] = true, -- Hagara the Stormbinder; Dragon Soul (To Do: only when in Raid Finder)
+	[56173] = true, -- Deathwing; Dragon Soul (no death)
 }
 
 S.SubZoneBossIDs = {
 	-- Scarlet Monastery
-	[4543] = L.Graveyard, -- [27-37?] Bloodmage Thalnos
-	[6487] = L.Library, -- [30-40?] Arcanist Doan
-	[3975] = L.Armory, -- [32-42?] Herod
+	[4543] = L.Graveyard, -- [26-36] Bloodmage Thalnos
+	[6487] = L.Library, -- [29-39] Arcanist Doan
+	[3975] = L.Armory, -- [32-42] Herod
 	[3977] = L.Cathedral, -- [35-45] High Inquisitor Whitemane
 	-- Maraudon
-	[12236] = L["The Wicked Grotto"], -- [39-49?] Lord Vyletongue
-	[12258] = L["Foulspore Cavern"], -- [41-51?] Razorlash
+	[12236] = L["The Wicked Grotto"], -- [30-40] Lord Vyletongue
+	[12258] = L["Foulspore Cavern"], -- [32-42] Razorlash
 	[12201] = L["Earth Song Falls"], -- [34-44] Princess Theradras
 	-- Blackrock Depths
 	[9018] = L["Detention Block"], -- [47-57] High Interrogator Gerstahn
@@ -204,8 +250,8 @@ S.SubZoneBossIDs = {
 
 S.SubRaidZoneBossIDs = {
 	-- Dragon Soul
-	[55689] = L["Fall of Deathwing"], -- Hagara the Stormbinder
-	[56173] = L["The Siege of Wyrmrest Temple"], --  Deathwing
+	[55689] = L["The Siege of Wyrmrest Temple"], -- Hagara the Stormbinder
+	[56173] = L["Fall of Deathwing"], --  Deathwing
 }
 
 	---------------------
@@ -382,7 +428,7 @@ end
 
 local exampleTime = random(3600)
 
-function KIT:InstanceText(subZone, isPreview)
+function KIT:InstanceText(subZone, isPreview, special)
 	wipe(args)
 	local instanceTime = self:GetInstanceTime()
 	
@@ -394,7 +440,7 @@ function KIT:InstanceText(subZone, isPreview)
 		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
 		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
 	else
-		args.instance = self:Zone()..(subZone and ": "..subZone or "")
+		args.instance = special or self:Zone()..(subZone and ": "..subZone or "")
 		args.time = self:Time(instanceTime > 0 and time() - instanceTime or 0)
 		args.start = char.startTime
 		args["end"] = date("%H:%M")
@@ -431,7 +477,7 @@ end
 	--------------
 
 -- Save Instance Timer data
-function KIT:Record(subZone)
+function KIT:Record(subZone, special, seasonal)
 	-- tried recycling "party" and that was kinda dumb of me
 	local party = {}
 	
@@ -444,13 +490,15 @@ function KIT:Record(subZone)
 		end
 	end
 	
+	local isRaidFinder = (GetLFGModeType() == "raid")
+	
 	tinsert(char.TimeInstanceList, {
 		date = char.startDate,
 		start = char.startTime,
 		["end"] = date("%H:%M"),
-		zone = self:Zone()..(subZone and ": "..subZone or ""),
-		instanceType = select(2, IsInInstance()),
-		difficulty = GetInstanceDifficulty(),
+		zone = special or self:Zone()..(subZone and ": "..subZone or ""),
+		instanceType = seasonal and "seasonal" or select(2, IsInInstance()),
+		difficulty = isRaidFinder or GetInstanceDifficulty(),
 		time = time() - char.timeInstance,
 		party = party,
 	})
