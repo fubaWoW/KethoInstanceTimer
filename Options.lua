@@ -87,7 +87,7 @@ S.options = {
 				Preview = {
 					type = "description", order = 3,
 					fontSize = "medium",
-					name = function() return "  "..KIT:InstanceText(nil, true) end,
+					name = function() return "  "..KIT:InstanceText(true) end,
 				},
 				spacing1 = {type = "description", order = 4, name = "\n"},
 				Stopwatch = {

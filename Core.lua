@@ -9,9 +9,9 @@ local options = S.options
 
 local profile, char
 
-	----------------------
-	--- Initialization ---
-	----------------------
+	---------------------------
+	--- Ace3 Initialization ---
+	---------------------------
 
 local slashCmds = {"kit", "kinstance", "kinstancetimer"}
 
@@ -50,7 +50,7 @@ function KIT:OnInitialize()
 	
 	char.TimeInstanceList = char.TimeInstanceList or {}
 	
-	-- time data should be preserved between /reload's
+	-- time data should be preserved between every /reload
 	char.timeInstance = char.timeInstance or 0
 	char.startDate = char.startDate or ""
 	char.startTime = char.startTime or ""
@@ -99,37 +99,20 @@ end
 	--- Start ---
 	-------------
 
-function KIT:CHAT_MSG_CHANNEL_NOTICE(event, msg)
-	if msg == "YOU_CHANGED" then
-		local instance = select(2, IsInInstance())
-		
-		if S.pve[instance] then
-			-- entered instance
-			if self:GetInstanceTime() == 0 then
-				self:StartData()
-			end
-			
-			if profile.Stopwatch then
-				S.StopwatchStart()
-			end
-		elseif instance == "none" and self:NoGroup() then
-			-- left instance
-			self:ResetTime(true)
-			
-			if profile.Stopwatch then
-				S.StopwatchEnd()
-			end
+function KIT:PLAYER_ENTERING_WORLD(event)
+	local instance = select(2, IsInInstance())
+	
+	if S.pve[instance] then
+		-- entered instance
+		if self:GetInstanceTime() == 0 then
+			self:StartData()
 		end
-	end
-end
-
-	-------------
-	--- Leave ---
-	-------------
-
-function KIT:CHAT_MSG_SYSTEM(event, msg)
-	-- left or kicked from group
-	if msg == ERR_LEFT_GROUP_YOU or msg == ERR_UNINVITE_YOU then
+		
+		if profile.Stopwatch then
+			S.StopwatchStart()
+		end
+	elseif instance == "none" and self:NoGroup() then
+		-- left instance
 		self:ResetTime(true)
 		
 		if profile.Stopwatch then
@@ -148,28 +131,27 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	if subevent == "UNIT_DIED" and strsub(destGUID, 5, 5) == "3" then
 		local destNPC = tonumber(strsub(destGUID, 7, 10), 16)
 		local id = S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]
+		
 		if id and self:GetInstanceTime() > 0 then
 			
 			-- damn you, cookie!
 			if destNPC == 47739 and GetInstanceDifficulty() == 2 then return end
 			
 			-- exceptions/overrides
-			local special = (type(id) == "string") and id
-			local seasonal = S.Seasonal[destNPC]
+			local override = (type(id) == "string") and id
 			
 			-- Record
-			local subZone = S.SubZoneBossIDs[destNPC] or S.SubRaidZoneBossIDs[destNPC]
 			if profile.RecordInstance then
-				self:Record(subZone, special, seasonal)
+				self:Record(override, S.Seasonal[destNPC])
 			end
 			
 			-- Report
 			if (profile.Instance and S.BossIDs[destNPC]) or (profile.Raid and S.RaidBossIDs[destNPC]) then
-				self:Pour(self:InstanceText(subZone, nil, special))
+				self:Pour(self:InstanceText(nil, override))
 			end
 			
 			if profile.Stopwatch then
-				Stopwatch_Pause()
+				S.StopwatchPause()
 			end
 			
 			if profile.Screenshot then
@@ -178,12 +160,11 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 				end, 1)
 			end
 			
-			-- pre-boss in a subzone
+			-- keep a backup time if the group decides to continue to the final boss
 			if S.PreBossIDs[destNPC] then
-				S.backupInstance = char.timeInstance
-			-- final boss in a subzone
+				S.PreBoss = char.timeInstance
 			elseif S.FinalBossIDs[destNPC] then
-				S.backupInstance = nil
+				S.PreBoss = nil
 			end
 			
 			-- pause LibDataBroker display 
@@ -196,11 +177,29 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	end
 end
 
+	---------------------
+	--- Leave / Reset ---
+	---------------------
+
+-- dunno how to find a string consisting of 2 words, with just %s
+local INSTANCE_RESET_SUCCESS = INSTANCE_RESET_SUCCESS:gsub("%%s", "")
+
+function KIT:CHAT_MSG_SYSTEM(event, msg)
+	-- left or kicked from group; or reset through ResetInstances()
+	if msg == ERR_LEFT_GROUP_YOU or msg == ERR_UNINVITE_YOU or strfind(msg, INSTANCE_RESET_SUCCESS) then
+		self:ResetTime(true)
+		
+		if profile.Stopwatch then
+			S.StopwatchEnd()
+		end
+	end
+end
+
 	-----------------------
 	--- Secondary Start ---
 	-----------------------
 
-function KIT:LFG_PROPOSAL_SUCCEEDED()
+function KIT:LFG_PROPOSAL_SUCCEEDED(event)
 	self:ScheduleTimer(function()
 		if self:GetInstanceTime() == 0 then
 			self:StartData()
@@ -218,7 +217,7 @@ end
 
 -- only fires after completing a random dungeon
 -- delay it a bit, so it doesn't react on the same time as boss death
-function KIT:LFG_COMPLETION_REWARD()
+function KIT:LFG_COMPLETION_REWARD(event)
 	self:ScheduleTimer(function()
 		if self:GetInstanceTime() > 0 then
 			if profile.RecordInstance then
@@ -230,8 +229,8 @@ function KIT:LFG_COMPLETION_REWARD()
 				self:Pour(self:InstanceText())
 			end
 			
-			if S.IsStopwatch() then
-				Stopwatch_Pause()
+			if profile.Stopwatch then
+				S.StopwatchPause()
 			end
 			
 			if profile.Screenshot then
@@ -248,17 +247,4 @@ function KIT:LFG_COMPLETION_REWARD()
 			self:ResetTime()
 		end
 	end, 1)
-end
-
-	---------------------
-	--- Reset by User ---
-	---------------------
-
--- dunno how to find a string consisting of 2 words, with just %s
-local INSTANCE_RESET_SUCCESS = INSTANCE_RESET_SUCCESS:gsub("%%s", "")
-
-function KIT:CHAT_MSG_SYSTEM(event, msg)
-	if strfind(msg, INSTANCE_RESET_SUCCESS) then
-		self:ResetTime(true)
-	end
 end

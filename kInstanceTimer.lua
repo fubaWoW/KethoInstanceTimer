@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.8.0 [2012.06.25]			---
+--- Version: 0.8.1 [2012.06.28]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -12,7 +12,7 @@
 -- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "0.8.0"
+S.VERSION = "0.8.1"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -39,16 +39,13 @@ local args = S.args
 	--------------
 
 S.events = {
-	"CHAT_MSG_CHANNEL_NOTICE",
-	"CHAT_MSG_SYSTEM",
+	"PLAYER_ENTERING_WORLD",
 	"COMBAT_LOG_EVENT_UNFILTERED",
+	"CHAT_MSG_SYSTEM",
 	
 	-- fallback/secondary events
-	"LFG_PROPOSAL_SUCCEEDED",
+	"LFG_PROPOSAL_SUCCEEDED", -- this doesn't seem to fire anymore :(
 	"LFG_COMPLETION_REWARD",
-	
-	-- RESET_INSTANCES button / ResetInstances()
-	"CHAT_MSG_SYSTEM",
 }
 
 	----------------------
@@ -80,32 +77,31 @@ S.BossIDs = { -- Instance Timer
 	-- [1-60] Classic
 	[1853] = true, -- Darkmaster Gandling; Scholomance
 	[2748] = true, -- Archaedas; Uldaman
-	[3975] = true, -- Herod; Scarlet Monastery: Armory
-	[3977] = true, -- High Inquisitor Whitemane; Scarlet Monastery: Cathedral
+	[3975] = L["Scarlet Monastery - Armory"], -- Herod
+	[3977] = L["Scarlet Monastery - Cathedral"], -- High Inquisitor Whitemane
 	[3654] = true, -- Mutanus the Devourer; Wailing Caverns
 	[4275] = true, -- Archmage Arugal; Shadowfang Keep (Normal/Heroic)
 	[4421] = true, -- Charlga Razorflank; Razorfen Kraul
-	[4543] = true, -- Bloodmage Thalnos; Scarlet Monastery: Graveyard
+	[4543] = L["Scarlet Monastery - Graveyard"], -- Bloodmage Thalnos
 	[4829] = true, -- Aku'mai; Blackfathom Deeps
 	[5709] = true, -- Shade of Eranikus; Sunken Temple
-	[6487] = true, -- Arcanist Doan; Scarlet Monastery: Library
+	[6487] = L["Scarlet Monastery - Library"], -- Arcanist Doan
 	[7267] = true, -- Chief Ukorz Sandscalp; Zul'Farrak
 	[7358] = true, -- Amnennar the Coldbringer; Razorfen Downs
 	[7800] = true, -- Mekgineer Thermaplugg; Gnomeregan
-	[9018] = true, -- High Interrogator Gerstahn; Blackrock Depths: Prison
-	[9019] = true, -- Emperor Dagran Thaurissan; Blackrock Depths: Upper City
-	-- Blackrock Spire doesn't return the instance's name as the zone name
-	[9568] = L["Lower Blackrock Spire"], -- Overlord Wyrmthalak; Lower Blackrock Spire
-	[10363] = L["Upper Blackrock Spire"], -- General Drakkisath; Upper Blackrock Spire
-	[10813] = true, -- Balnazzar; Stratholme: Main Gate
-	[11486] = true, -- Prince Tortheldrin; Dire Maul: Capital Gardens
+	[9018] = L["Blackrock Depths - Detention Block"], -- High Interrogator Gerstahn
+	[9019] = L["Blackrock Depths - Upper City"], -- Emperor Dagran Thaurissan
+	[9568] = L["Lower Blackrock Spire"], -- Overlord Wyrmthalak
+	[10363] = L["Upper Blackrock Spire"], -- General Drakkisath
+	[10813] = L["Stratholme - Main Gate"], -- Balnazzar
+	[11486] = L["Dire Maul - Capital Gardens"], -- Prince Tortheldrin
 	[11492] = true, -- Alzzin the Wildshaper; Dire Maul: Warpwood Quarter
-	[11501] = true, -- King Gordok; Dire Maul: Gordok Commons
+	[11501] = L["Dire Maul - Gordok Commons"], -- King Gordok
 	[11520] = true, -- Taragaman the Hungerer; Ragefire Chasm
-	[12201] = true, -- Princess Theradras; Maraudon: Earth Song Falls
-	[12236] = true, -- Lord Vyletongue; Maraudon: The Wicked Grotto
-	[12258] = true, -- Razorlash; Maraudon: Foulspore Cavern
-	[45412] = true, -- Lord Aurius Rivendare; Stratholme - Service Entrance
+	[12201] = L["Maraudon - Earth Song Falls"], -- Princess Theradras
+	[12236] = L["Maraudon - The Wicked Grotto"], -- Lord Vyletongue
+	[12258] = L["Maraudon - Foulspore Cavern"], -- Razorlash
+	[45412] = L["Stratholme - Service Entrance"], -- Lord Aurius Rivendare
 	[46964] = true, -- Lord Godfrey; Shadowfang Keep
 	[46254] = true, -- Hogger; Stormwind Stockade
 	[47739] = true, -- "Captain" Cookie; Deadmines (Normal)
@@ -114,8 +110,8 @@ S.BossIDs = { -- Instance Timer
 	-- [60-70] The Burning Crusade
 	[16808] = true, -- Warchief Kargath Bladefist; Hellfire Citadel: The Shattered Halls
 	[17377] = true, -- Keli'dan the Breaker; Hellfire Citadel: The Blood Furnace
---	[17536] = true, -- [Old] Nazan; Hellfire Citadel: Hellfire Ramparts
-	[17307] = true, -- Nazan; Hellfire Citadel: Hellfire Ramparts
+--	[17536] = true, -- Nazan; Hellfire Citadel: Hellfire Ramparts
+	[17307] = true, -- Nazan/Vazruden the Herald; Hellfire Citadel: Hellfire Ramparts
 	[17798] = true, -- Warlord Kalithresh; Coilfang Reservoir: The Steamvault
 	[17881] = true, -- Aeonus; Caverns of Time: The Black Morass
 	[17882] = true, -- The Black Stalker; Coilfang Reservoir: The Underbog
@@ -166,7 +162,8 @@ S.BossIDs = { -- Instance Timer
 S.Seasonal = {
 	[23682] = L["The Headless Horseman"], -- "Headless Horseman", Hallow's End
 	[23872] = L["Coren Direbrew"], -- "Coren Direbrew", Brewfest
-	[25740] = L["The Frost Lord Ahune"], -- "Ahune", Midsummer Fire Festival
+	[25740] = L["The Frost Lord Ahune"], -- "Ahune", Midsummer Fire Festival; transforms into "Frozen Core"
+	[25865] = L["The Frost Lord Ahune"], -- "Frozen Core"; Midsummer Fire Festival
 	[36296] = L["The Crown Chemical Co."], -- "Apothecary Hummel", Love is in the Air
 }
 
@@ -176,16 +173,16 @@ for k, v in pairs(S.Seasonal) do
 end
 
 S.PreBossIDs = {
-	[12236] = true, -- Lord Vyletongue
-	[12258] = true, -- Razorlash
-	[9018] = true, -- High Interrogator Gerstahn
-	[10813] = true, -- Balnazzar
+	[12236] = true, -- Lord Vyletongue; Maraudon
+	[12258] = true, -- Razorlash; Maraudon
+	[9018] = true, -- High Interrogator Gerstahn; Blackrock Depths
+	[10813] = true, -- Balnazzar; Stratholme
 }
 
 S.FinalBossIDs = {
-	[12201] = true, -- Princess Theradras
-	[9019] = true, -- Emperor Dagran Thaurissan
-	[45412] = true, -- Lord Aurius Rivendare
+	[12201] = true, -- Princess Theradras; Maraudon
+	[9019] = true, -- Emperor Dagran Thaurissan; Blackrock Depths
+	[45412] = true, -- Lord Aurius Rivendare; Stratholme
 }
 
 S.RaidBossIDs = { -- untested
@@ -222,36 +219,8 @@ S.RaidBossIDs = { -- untested
 	[46753] = true, -- Al'Akir; Throne of the Four Winds
 	[52363] = true, -- Occu'thar; Baradin Hold
 	[52409] = true, -- Ragnaros; Firelands
-	[55689] = true, -- Hagara the Stormbinder; Dragon Soul (To Do: only when in Raid Finder)
-	[56173] = true, -- Deathwing; Dragon Soul (no death)
-}
-
-S.SubZoneBossIDs = {
-	-- Scarlet Monastery
-	[4543] = L.Graveyard, -- [26-36] Bloodmage Thalnos
-	[6487] = L.Library, -- [29-39] Arcanist Doan
-	[3975] = L.Armory, -- [32-42] Herod
-	[3977] = L.Cathedral, -- [35-45] High Inquisitor Whitemane
-	-- Maraudon
-	[12236] = L["The Wicked Grotto"], -- [30-40] Lord Vyletongue
-	[12258] = L["Foulspore Cavern"], -- [32-42] Razorlash
-	[12201] = L["Earth Song Falls"], -- [34-44] Princess Theradras
-	-- Blackrock Depths
-	[9018] = L["Detention Block"], -- [47-57] High Interrogator Gerstahn
-	[9019] = L["Upper City"], -- [51-61] Emperor Dagran Thaurissan
-	-- Dire Maul
-	[11492] = L["Warpwood Quarter"], -- [36-46] Alzzin the Wildshaper
-	[11486] = L["Capital Gardens"], -- [39-49] Prince Tortheldrin
-	[11501] = L["Gordok Commons"], -- [42-52] King Gordok
-	-- Stratholme
-	[10813] = L["Main Gate"], -- [42-52] Balnazzar
-	[45412] = L["Service Entrance"], -- [46-56] Lord Aurius Rivendare
-}
-
-S.SubRaidZoneBossIDs = {
-	-- Dragon Soul
-	[55689] = L["The Siege of Wyrmrest Temple"], -- Hagara the Stormbinder
-	[56173] = L["Fall of Deathwing"], --  Deathwing
+	[55689] = L["The Siege of Wyrmrest Temple"], -- Hagara the Stormbinder; Dragon Soul (To Do: only when in Raid Finder)
+	[56173] = L["Fall of Deathwing"], -- Deathwing; Dragon Soul (no death)
 }
 
 	---------------------
@@ -259,7 +228,7 @@ S.SubRaidZoneBossIDs = {
 	---------------------
 
 function KIT:GetInstanceTime()
-	return S.backupInstance or char.timeInstance
+	return S.PreBoss or char.timeInstance
 end
 
 function KIT:StartData()
@@ -268,9 +237,9 @@ function KIT:StartData()
 	char.startDate = date("%Y.%m.%d")
 	char.startTime = date("%H:%M")
 	
-	-- reset so broker can start counting again
-	S.backupInstance = nil
+	-- reset so the broker timer can start counting again
 	S.LastInst = nil	
+	S.PreBoss = nil
 end
 
 function KIT:ResetTime(isLeave)
@@ -279,8 +248,8 @@ function KIT:ResetTime(isLeave)
 	char.startTime = ""
 	
 	if isLeave then
-		S.backupInstance = nil
 		S.LastInst = nil
+		S.PreBoss = nil
 	end
 end
 
@@ -394,9 +363,16 @@ function S.StopwatchEnd()
 	StopwatchFrame:Hide()
 end
 
+function S.StopwatchPause()
+	-- recalibrate
+	StopwatchTicker.timer = time() - char.timeInstance
+	StopwatchTicker_Update()
+	Stopwatch_Pause()
+end
+
+-- for when we're not sure whether the player is in an instance
 function S.IsStopwatch()
-	local instance = select(2, IsInInstance())
-	return (profile.Stopwatch and instance ~= "none")
+	return (profile.Stopwatch and select(2, IsInInstance()) ~= "none")
 end
 
 	--------------------
@@ -404,7 +380,7 @@ end
 	--------------------
 
 S.classCache = setmetatable({}, {__index = function(t, k)
-	local color = CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[k] or RAID_CLASS_COLORS[k]
+	local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[k]
 	local v = format("%02X%02X%02X", color.r*255, color.g*255, color.b*255)
 	rawset(t, k, v)
 	return v
@@ -423,61 +399,11 @@ function KIT:Zone()
 end
 
 	--------------
-	--- Report ---
-	--------------
-
-local exampleTime = random(3600)
-
-function KIT:InstanceText(subZone, isPreview, special)
-	wipe(args)
-	local instanceTime = self:GetInstanceTime()
-	
-	if isPreview then
-		args.instance = "|cffA8A8FF"..self:Zone().."|r"
-		args.time = "|cff71D5FF"..self:Time(instanceTime > 0 and time() - instanceTime or exampleTime).."|r"
-		args.start = "|cffF6ADC6"..(instanceTime > 0 and char.startTime or date("%H:%M")).."|r"
-		args["end"] = "|cffADFF2F"..date("%H:%M", time() + exampleTime).."|r" -- can't use keywords as a table key o_O
-		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
-		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
-	else
-		args.instance = special or self:Zone()..(subZone and ": "..subZone or "")
-		args.time = self:Time(instanceTime > 0 and time() - instanceTime or 0)
-		args.start = char.startTime
-		args["end"] = date("%H:%M")
-		args.date = date("%Y.%m.%d")
-		args.date2 = date("%m/%d/%y")
-	end
-	return self:ReplaceArgs(profile.InstanceTimerMsg, args)
-end
-
-	---------------
-	--- Replace ---
-	---------------
-
-function KIT:ReplaceArgs(msg, args)
-	-- new random messages init as nil
-	if not msg then return "" end
-	
-	for k in gmatch(msg, "%b<>") do
-		-- remove <>, make case insensitive
-		local s = strlower(gsub(k, "[<>]", ""))
-		
-		-- escape special characters
-		s = gsub(args[s] or s, "(%p)", "%%%1")
-		k = gsub(k, "(%p)", "%%%1")
-		
-		msg = msg:gsub(k, s)
-	end
-	wipe(args)
-	return msg
-end
-
-	--------------
 	--- Record ---
 	--------------
 
 -- Save Instance Timer data
-function KIT:Record(subZone, special, seasonal)
+function KIT:Record(override, seasonal)
 	-- tried recycling "party" and that was kinda dumb of me
 	local party = {}
 	
@@ -496,10 +422,60 @@ function KIT:Record(subZone, special, seasonal)
 		date = char.startDate,
 		start = char.startTime,
 		["end"] = date("%H:%M"),
-		zone = special or self:Zone()..(subZone and ": "..subZone or ""),
+		zone = override or self:Zone(),
 		instanceType = seasonal and "seasonal" or select(2, IsInInstance()),
 		difficulty = isRaidFinder or GetInstanceDifficulty(),
 		time = time() - char.timeInstance,
 		party = party,
 	})
+end
+
+	---------------
+	--- Replace ---
+	---------------
+
+local function ReplaceArgs(msg, args)
+	-- new random messages init as nil
+	if not msg then return "" end
+	
+	for k in gmatch(msg, "%b<>") do
+		-- remove <>, make case insensitive
+		local s = strlower(gsub(k, "[<>]", ""))
+		
+		-- escape special characters
+		s = gsub(args[s] or s, "(%p)", "%%%1")
+		k = gsub(k, "(%p)", "%%%1")
+		
+		msg = msg:gsub(k, s)
+	end
+	wipe(args)
+	return msg
+end
+
+	--------------
+	--- Report ---
+	--------------
+
+local exampleTime = random(3600)
+
+function KIT:InstanceText(isPreview, override)
+	wipe(args)
+	local instanceTime = self:GetInstanceTime()
+	
+	if isPreview then
+		args.instance = "|cffA8A8FF"..self:Zone().."|r"
+		args.time = "|cff71D5FF"..self:Time(instanceTime > 0 and time() - instanceTime or exampleTime).."|r"
+		args.start = "|cffF6ADC6"..(instanceTime > 0 and char.startTime or date("%H:%M")).."|r"
+		args["end"] = "|cffADFF2F"..date("%H:%M", time() + exampleTime).."|r" -- can't use keywords as a table key o_O
+		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
+		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
+	else
+		args.instance = override or self:Zone()
+		args.time = self:Time(instanceTime > 0 and time() - instanceTime or 0)
+		args.start = char.startTime
+		args["end"] = date("%H:%M")
+		args.date = date("%Y.%m.%d")
+		args.date2 = date("%m/%d/%y")
+	end
+	return ReplaceArgs(profile.InstanceTimerMsg, args)
 end
