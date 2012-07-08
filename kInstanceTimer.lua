@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.8.1 [2012.06.28]			---
+--- Version: 0.8.2 [2012.07.08]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -12,7 +12,7 @@
 -- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "0.8.1"
+S.VERSION = "0.8.2"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -46,6 +46,8 @@ S.events = {
 	-- fallback/secondary events
 	"LFG_PROPOSAL_SUCCEEDED", -- this doesn't seem to fire anymore :(
 	"LFG_COMPLETION_REWARD",
+	
+	"UNIT_SPELLCAST_SUCCEEDED",
 }
 
 	----------------------
@@ -223,6 +225,11 @@ S.RaidBossIDs = { -- untested
 	[56173] = L["Fall of Deathwing"], -- Deathwing; Dragon Soul (no death)
 }
 
+-- Spell IDs instead of death events
+S.SpellIDs = {
+	[110101] = L["Fall of Deathwing"], -- "Death"; "Deathwing"
+}
+
 	---------------------
 	--- Instance Time ---
 	---------------------
@@ -339,13 +346,11 @@ end
 	-----------------
 
 function S.StopwatchStart()
-	
 	local v
-	local instance = select(2, IsInInstance())
 	
-	if S.pve[instance] then
+	if S.pve[S.instance] then
 		v = KIT:GetInstanceTime()
-	elseif S.pvp[instance] then
+	elseif S.pvp[S.instance] then
 		v = GetBattlefieldInstanceRunTime()
 	end
 	
@@ -372,7 +377,7 @@ end
 
 -- for when we're not sure whether the player is in an instance
 function S.IsStopwatch()
-	return (profile.Stopwatch and select(2, IsInInstance()) ~= "none")
+	return (profile.Stopwatch and S.instance ~= "none")
 end
 
 	--------------------
@@ -396,6 +401,23 @@ end
 
 function KIT:Zone()
 	return GetRealZoneText() or GetSubZoneText() or ZONE
+end
+
+function KIT:Finalize()
+	if profile.Stopwatch then
+		S.StopwatchPause()
+	end
+	
+	if profile.Screenshot then
+		self:ScheduleTimer(Screenshot, 1)
+	end
+	
+	-- pause LibDataBroker display 
+	local startTime = self:GetInstanceTime()
+	S.LastInst = startTime > 0 and time() - startTime
+	
+	-- reset variables
+	self:ResetTime()
 end
 
 	--------------
@@ -423,7 +445,7 @@ function KIT:Record(override, seasonal)
 		start = char.startTime,
 		["end"] = date("%H:%M"),
 		zone = override or self:Zone(),
-		instanceType = seasonal and "seasonal" or select(2, IsInInstance()),
+		instanceType = seasonal and "seasonal" or S.instance,
 		difficulty = isRaidFinder or GetInstanceDifficulty(),
 		time = time() - char.timeInstance,
 		party = party,

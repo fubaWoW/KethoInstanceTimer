@@ -250,9 +250,7 @@ function KIT:DataFrame()
 				self:StartMoving()
 			end
 		end)
-		f:SetScript("OnMouseUp", function(self, button)
-			self:StopMovingOrSizing()
-		end)
+		f:SetScript("OnMouseUp", f.StopMovingOrSizing)
 		
 	-------------------
 	--- ScrollFrame ---

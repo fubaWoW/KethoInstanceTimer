@@ -100,9 +100,9 @@ end
 	-------------
 
 function KIT:PLAYER_ENTERING_WORLD(event)
-	local instance = select(2, IsInInstance())
+	S.instance = select(2, IsInInstance())
 	
-	if S.pve[instance] then
+	if S.pve[S.instance] then
 		-- entered instance
 		if self:GetInstanceTime() == 0 then
 			self:StartData()
@@ -111,7 +111,7 @@ function KIT:PLAYER_ENTERING_WORLD(event)
 		if profile.Stopwatch then
 			S.StopwatchStart()
 		end
-	elseif instance == "none" and self:NoGroup() then
+	elseif S.instance == "none" and self:NoGroup() then
 		-- left instance
 		self:ResetTime(true)
 		
@@ -137,6 +137,9 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 			-- damn you, cookie!
 			if destNPC == 47739 and GetInstanceDifficulty() == 2 then return end
 			
+			-- [Hagara the Stormbinder] not raid finder mode
+			if destNPC == 55689 and GetLFGModeType() ~= "raid" then return end
+			
 			-- exceptions/overrides
 			local override = (type(id) == "string") and id
 			
@@ -150,16 +153,6 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 				self:Pour(self:InstanceText(nil, override))
 			end
 			
-			if profile.Stopwatch then
-				S.StopwatchPause()
-			end
-			
-			if profile.Screenshot then
-				self:ScheduleTimer(function()
-					Screenshot()
-				end, 1)
-			end
-			
 			-- keep a backup time if the group decides to continue to the final boss
 			if S.PreBossIDs[destNPC] then
 				S.PreBoss = char.timeInstance
@@ -167,12 +160,7 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 				S.PreBoss = nil
 			end
 			
-			-- pause LibDataBroker display 
-			local startTime = self:GetInstanceTime()
-			S.LastInst = startTime > 0 and time() - startTime
-			
-			-- reset variables
-			self:ResetTime()
+			self:Finalize()
 		end
 	end
 end
@@ -224,27 +212,32 @@ function KIT:LFG_COMPLETION_REWARD(event)
 				self:Record()
 			end
 			
-			local instance = select(2, IsInInstance())
-			if (profile.Instance and instance == "party") or (profile.Raid and instance == "raid") then
+			if (profile.Instance and S.instance == "party") or (profile.Raid and S.instance == "raid") then
 				self:Pour(self:InstanceText())
 			end
 			
-			if profile.Stopwatch then
-				S.StopwatchPause()
-			end
-			
-			if profile.Screenshot then
-				self:ScheduleTimer(function()
-					Screenshot()
-				end, 1)
-			end
-			
-			-- pause LibDataBroker display 
-			local startTime = self:GetInstanceTime()
-			S.LastInst = startTime > 0 and time() - startTime
-			
-			-- reset variables
-			self:ResetTime()
+			self:Finalize()
 		end
 	end, 1)
+end
+
+	-------------------
+	--- Special End ---
+	-------------------
+
+function KIT:UNIT_SPELLCAST_SUCCEEDED(event, unit, name, _, _, spellID)
+	if S.SpellIDs[spellID] and self:GetInstanceTime() > 0 then
+		-- [Deathwing] "Fall of Deathwing" or "Dragon Soul"
+		local override = (GetLFGModeType() == "raid") and S.SpellIDs[spellID]
+		
+		if profile.RecordInstance then
+			self:Record(override)
+		end
+		
+		if (profile.Instance and S.instance == "party") or (profile.Raid and S.instance == "raid") then
+			self:Pour(self:InstanceText(nil, override))
+		end
+		
+		self:Finalize()
+	end
 end

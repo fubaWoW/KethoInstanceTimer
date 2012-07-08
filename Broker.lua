@@ -44,16 +44,12 @@ end
 	-------------
 
 KIT:ScheduleRepeatingTimer(function()
-	local instance = select(2, IsInInstance())
-	
-	if S.pve[instance] then
-		local istanceTime = KIT:GetInstanceTime()
-		dataobject.text = MilitaryTime(S.LastInst and S.LastInst or (istanceTime > 0 and time() - istanceTime or 0))
-	elseif S.pvp[instance] then -- no idea about arena
+	if S.pvp[S.instance] then -- no idea about arena
 		local bgTime = GetBattlefieldInstanceRunTime() or 0
 		dataobject.text = MilitaryTime(bgTime / 1000)
 	else
-		dataobject.text = MilitaryTime(0)
+		local istanceTime = KIT:GetInstanceTime()
+		dataobject.text = MilitaryTime(S.LastInst and S.LastInst or (istanceTime > 0 and time() - istanceTime or 0))
 	end
 end, 1)
 
