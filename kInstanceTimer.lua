@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.8.2 [2012.07.08]			---
+--- Version: 0.9.0 [2012.08.28]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -12,7 +12,7 @@
 -- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "0.8.2"
+S.VERSION = "0.9.0"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -159,6 +159,9 @@ S.BossIDs = { -- Instance Timer
 	[54432] = true, -- Murozond; End Time
 	[54969] = true, -- Mannoroth; Well of Eternity (not sure if this one works)
 	[54938] = true, -- Archbishop Benedictus; Hour of Twilight
+	
+	-- [80-85] Mists of Pandaria
+	-- To Do
 }
 
 S.Seasonal = {
@@ -396,7 +399,8 @@ end})
 	------------
 
 function KIT:NoGroup()
-	return GetNumPartyMembers() == 0 and GetNumRaidMembers() == 0 and not IsOnePersonParty()
+	-- MoP (5.0.4): IsInGroup() supposedly replaces IsOnePersonParty()
+	return GetNumSubgroupMembers() == 0 and GetNumGroupMembers() == 0 and not IsInGroup()
 end
 
 function KIT:Zone()
@@ -430,15 +434,16 @@ function KIT:Record(override, seasonal)
 	local party = {}
 	
 	-- don't record (party) members for raid instances
-	if not (GetNumRaidMembers() > 0) then
-		for i = 1, GetNumPartyMembers() do
+	if not (GetNumGroupMembers() > 0) then
+		for i = 1, GetNumSubgroupMembers() do
 			local name, realm = UnitName("party"..i)
 			local class = select(2, UnitClass("party"..i))
 			party[i] = {name, realm or GetRealmName(), class}
 		end
 	end
 	
-	local isRaidFinder = (GetLFGModeType() == "raid")
+	-- MoP (5.0.4): remove Raid Finder detection for now
+	--local isRaidFinder = (GetLFGModeType() == "raid")
 	
 	tinsert(char.TimeInstanceList, {
 		date = char.startDate,
