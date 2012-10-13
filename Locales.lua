@@ -1,18 +1,10 @@
 ﻿local _, S = ...
 
--- UTF-8 encoding
-
 -- extracted DBFilesClient\LFGDungeons.dbc (4.3.4.15595) with MPQ Editor by Ladislav Zezula - http://www.zezula.net/en/mpq/download.html
 -- converted to csv with WoWParser2 by Carlos Ramzuel - http://code.google.com/p/cntc2/
 
 local L = {
 	enUS = {
-		-- Scarlet Monastery
-		["Scarlet Monastery - Graveyard"] = "Scarlet Monastery - Graveyard",
-		["Scarlet Monastery - Library"] = "Scarlet Monastery - Library",
-		["Scarlet Monastery - Armory"] = "Scarlet Monastery - Armory",
-		["Scarlet Monastery - Cathedral"] = "Scarlet Monastery - Cathedral",
-		
 		-- Maraudon
 		["Maraudon - The Wicked Grotto"] = "Maraudon - The Wicked Grotto",
 		["Maraudon - Foulspore Cavern"] = "Maraudon - Foulspore Cavern",
@@ -61,12 +53,9 @@ local L = {
 		TIME_ABBREVIATE = "Abbreviate",
 		
 		BROKER_CLICK = "|cffFFFFFFClick|r to open the options menu",
+		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-click|r to toggle this AddOn",
 	},
 	deDE = {
-		["Scarlet Monastery - Graveyard"] = "Scharlachrotes Kloster - Friedhof", -- "Scharlachrotes Kloster - Friedhof"
-		["Scarlet Monastery - Library"] = "Scharlachrotes Kloster - Bibliothek", -- "Scharlachrotes Kloster - Bibliothek"
-		["Scarlet Monastery - Armory"] = "Scharlachrotes Kloster - Waffenkammer", -- "Scharlachrotes Kloster - Waffenkammer"
-		["Scarlet Monastery - Cathedral"] = "Scharlachrotes Kloster - Kathedrale", -- "Scharlachrotes Kloster - Kathedrale"
 		["Maraudon - The Wicked Grotto"] = "Maraudon - Die T\195\188ckische Grotte", -- "Maraudon - Die Tückische Grotte"
 		["Maraudon - Foulspore Cavern"] = "Maraudon - Faulsporenh\195\182hle", -- "Maraudon - Faulsporenhöhle"
 		["Maraudon - Earth Song Falls"] = "Maraudon - F\195\164lle des Irdenen Gesangs", -- "Maraudon - Fälle des Irdenen Gesangs"
@@ -90,13 +79,10 @@ local L = {
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] beendet in <TIME> [<START>]-[<END>]",
 		
 		BROKER_CLICK = "|cffFFFFFFKlickt|r, um das Optionsmen\195\188 zu \195\182ffnen",
+		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-klickt|r, um dieses AddOn ein-/auszuschalten",
 	},
 	--esES = {},
 	esMX = {
-		["Scarlet Monastery - Graveyard"] = "Monasterio Escarlata - Cementerio", -- "Monasterio Escarlata - Cementerio"
-		["Scarlet Monastery - Library"] = "Monasterio Escarlata - Biblioteca", -- "Monasterio Escarlata - Biblioteca"
-		["Scarlet Monastery - Armory"] = "Monasterio Escarlata - Arsenal", -- "Monasterio Escarlata - Arsenal"
-		["Scarlet Monastery - Cathedral"] = "Monasterio Escarlata - Catedral", -- "Monasterio Escarlata - Catedral"
 		["Maraudon - The Wicked Grotto"] = "Maraudon - La Gruta Maligna", -- "Maraudon - La Gruta Maligna"
 		["Maraudon - Foulspore Cavern"] = "Maraudon - Gruta de la Espora F\195\169tida", -- "Maraudon - Gruta de la Espora Fétida"
 		["Maraudon - Earth Song Falls"] = "Maraudon - Cascadas del Canto de la Tierra", -- "Maraudon - Cascadas del Canto de la Tierra"
@@ -115,12 +101,11 @@ local L = {
 		["Coren Direbrew"] = "Coren Cerveza Temible", -- "Coren Cerveza Temible"
 		["The Frost Lord Ahune"] = "El Se\195\177or de la Escarcha Ahune", -- "El Señor de la Escarcha Ahune"
 		["The Crown Chemical Co."] = "Qu\195\173micos La Corona, S.L.", -- "Químicos La Corona, S.L."
+		
+		BROKER_CLICK = "|cffffffffHaz clic|r para ver opciones.",
+		BROKER_SHIFT_CLICK = "|cffffffffMayús-clic|r para activar/desactivar.",
 	},
 	frFR = {
-		["Scarlet Monastery - Graveyard"] = "Monast\195\168re \195\169carlate - Cimeti\195\168re", -- "Monastère écarlate - Cimetière"
-		["Scarlet Monastery - Library"] = "Monast\195\168re \195\169carlate - Biblioth\195\168que", -- "Monastère écarlate - Bibliothèque"
-		["Scarlet Monastery - Armory"] = "Monast\195\168re \195\169carlate - Armurerie", -- "Monastère écarlate - Armurerie"
-		["Scarlet Monastery - Cathedral"] = "Monast\195\168re \195\169carlate - Cath\195\169drale", -- "Monastère écarlate - Cathédrale"
 		["Maraudon - The Wicked Grotto"] = "Maraudon - La grotte Maudite", -- "Maraudon - La grotte Maudite"
 		["Maraudon - Foulspore Cavern"] = "Maraudon - Caverne Vilespore", -- "Maraudon - Caverne Vilespore"
 		["Maraudon - Earth Song Falls"] = "Maraudon - Chutes de Chanteterre", -- "Maraudon - Chutes de Chanteterre"
@@ -141,8 +126,6 @@ local L = {
 		["The Crown Chemical Co."] = "Cie de Chimie La Royale", -- "Cie de Chimie La Royale"
 	},
 	itIT = { -- MoP 5.0.1.15781
-		--["Scarlet Halls"] = "Sale Scarlatte",
-		--["Scarlet Monastery"] = "Monastero Scarlatto",
 		["Maraudon - The Wicked Grotto"] = "Maraudon - Grotta Perversa", -- "Maraudon - Grotta Perversa"
 		["Maraudon - Foulspore Cavern"] = "Maraudon - Caverna Spora Funesta", -- "Maraudon - Caverna Spora Funesta"
 		["Maraudon - Earth Song Falls"] = "Maraudon - Cascate Cantaterra", -- "Maraudon - Cascate Cantaterra"
@@ -163,10 +146,6 @@ local L = {
 		["The Crown Chemical Co."] = "Industrie F.lli Corona", -- "Industrie F.lli Corona"
 	},
 	koKR = {
-		["Scarlet Monastery - Graveyard"] = "\235\182\137\236\157\128\236\139\173\236\158\144\234\181\176 \236\136\152\235\143\132\236\155\144 - \235\172\152\236\167\128", -- "붉은십자군 수도원 - 묘지"
-		["Scarlet Monastery - Library"] = "\235\182\137\236\157\128\236\139\173\236\158\144\234\181\176 \236\136\152\235\143\132\236\155\144 - \235\143\132\236\132\156\234\180\128", -- "붉은십자군 수도원 - 도서관"
-		["Scarlet Monastery - Armory"] = "\235\182\137\236\157\128\236\139\173\236\158\144\234\181\176 \236\136\152\235\143\132\236\155\144 - \235\172\180\234\184\176\234\179\160", -- "붉은십자군 수도원 - 무기고"
-		["Scarlet Monastery - Cathedral"] = "\235\182\137\236\157\128\236\139\173\236\158\144\234\181\176 \236\136\152\235\143\132\236\155\144 - \236\152\136\235\176\176\235\139\185", -- "붉은십자군 수도원 - 예배당"
 		["Maraudon - The Wicked Grotto"] = "\235\167\136\235\157\188\236\154\176\235\143\136 - \236\149\133\236\157\152 \235\143\153\234\181\180", -- "마라우돈 - 악의 동굴"
 		["Maraudon - Foulspore Cavern"] = "\235\167\136\235\157\188\236\154\176\235\143\136 - \236\141\169\236\157\128\237\143\172\236\158\144 \235\143\153\234\181\180", -- "마라우돈 - 썩은포자 동굴"
 		["Maraudon - Earth Song Falls"] = "\235\167\136\235\157\188\236\154\176\235\143\136 - \235\140\128\236\167\128\235\133\184\235\158\152 \237\143\173\237\143\172", -- "마라우돈 - 대지노래 폭포"
@@ -187,10 +166,6 @@ local L = {
 		["The Crown Chemical Co."] = "\236\153\149\234\180\128\237\153\148\237\149\153\237\154\140\236\130\172", -- "왕관화학회사"
 	},
 	ptBR = {
-		["Scarlet Monastery - Graveyard"] = "Monast\195\169rio Escarlate - Cemit\195\169rio", -- "Monastério Escarlate - Cemitério"
-		["Scarlet Monastery - Library"] = "Monast\195\169rio Escarlate - Biblioteca", -- "Monastério Escarlate - Biblioteca"
-		["Scarlet Monastery - Armory"] = "Monast\195\169rio Escarlate - Armaria", -- "Monastério Escarlate - Armaria"
-		["Scarlet Monastery - Cathedral"] = "Monast\195\169rio Escarlate - Catedral", -- "Monastério Escarlate - Catedral"
 		["Maraudon - The Wicked Grotto"] = "Maraudon - Gruta Nociva", -- "Maraudon - Gruta Nociva"
 		["Maraudon - Foulspore Cavern"] = "Maraudon - Caverna Esporelama", -- "Maraudon - Caverna Esporelama"
 		["Maraudon - Earth Song Falls"] = "Maraudon - Cachoeiras da Can\195\167\195\163o Tel\195\186rica", -- "Maraudon - Cachoeiras da Canção Telúrica"
@@ -211,10 +186,6 @@ local L = {
 		["The Crown Chemical Co."] = "Qu\195\173micos Coroa S.A.", -- "Químicos Coroa S.A."
 	},
 	ruRU = {
-		["Scarlet Monastery - Graveyard"] = "\208\156\208\190\208\189\208\176\209\129\209\130\209\139\209\128\209\140 \208\144\208\187\208\190\208\179\208\190 \208\190\209\128\208\180\208\181\208\189\208\176 - \208\186\208\187\208\176\208\180\208\177\208\184\209\137\208\181", -- "Монастырь Алого ордена - кладбище"
-		["Scarlet Monastery - Library"] = "\208\156\208\190\208\189\208\176\209\129\209\130\209\139\209\128\209\140 \208\144\208\187\208\190\208\179\208\190 \208\190\209\128\208\180\208\181\208\189\208\176 - \208\145\208\184\208\177\208\187\208\184\208\190\209\130\208\181\208\186\208\176", -- "Монастырь Алого ордена - Библиотека"
-		["Scarlet Monastery - Armory"] = "\208\156\208\190\208\189\208\176\209\129\209\130\209\139\209\128\209\140 \208\144\208\187\208\190\208\179\208\190 \208\190\209\128\208\180\208\181\208\189\208\176 - \208\158\209\128\209\131\208\182\208\181\208\185\208\189\208\176\209\143", -- "Монастырь Алого ордена - Оружейная"
-		["Scarlet Monastery - Cathedral"] = "\208\156\208\190\208\189\208\176\209\129\209\130\209\139\209\128\209\140 \208\144\208\187\208\190\208\179\208\190 \208\190\209\128\208\180\208\181\208\189\208\176 - \208\161\208\190\208\177\208\190\209\128", -- "Монастырь Алого ордена - Собор"
 		["Maraudon - The Wicked Grotto"] = "\208\156\208\176\209\128\208\190\208\180\208\190\208\189 - \208\158\209\129\208\186\208\178\208\181\209\128\208\189\208\181\208\189\208\189\209\139\208\185 \208\179\209\128\208\190\209\130", -- "Мародон - Оскверненный грот"
 		["Maraudon - Foulspore Cavern"] = "\208\156\208\176\209\128\208\190\208\180\208\190\208\189 - \208\151\208\187\208\190\208\178\208\190\208\189\208\189\208\176\209\143 \208\191\208\181\209\137\208\181\209\128\208\176", -- "Мародон - Зловонная пещера"
 		["Maraudon - Earth Song Falls"] = "\208\156\208\176\209\128\208\190\208\180\208\190\208\189 - \208\159\208\190\209\142\209\137\208\184\208\181 \208\178\208\190\208\180\208\190\208\191\208\176\208\180\209\139", -- "Мародон - Поющие водопады"
@@ -235,10 +206,6 @@ local L = {
 		["The Crown Chemical Co."] = "\208\154\208\190\209\128\208\190\208\187\208\181\208\178\209\129\208\186\208\176\209\143 \209\133\208\184\208\188\208\184\209\135\208\181\209\129\208\186\208\176\209\143 \208\186\208\190\208\188\208\191\208\176\208\189\208\184\209\143", -- "Королевская химическая компания"
 	},
 	zhCN = {
-		["Scarlet Monastery - Graveyard"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \229\162\147\229\155\173", -- "血色修道院 - 墓园"
-		["Scarlet Monastery - Library"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \229\155\190\228\185\166\233\166\134", -- "血色修道院 - 图书馆"
-		["Scarlet Monastery - Armory"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \229\134\155\230\162\176\229\186\147", -- "血色修道院 - 军械库"
-		["Scarlet Monastery - Cathedral"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \229\164\167\230\149\153\229\160\130", -- "血色修道院 - 大教堂"
 		["Maraudon - The Wicked Grotto"] = "\231\142\155\230\139\137\233\161\191\239\188\141\233\130\170\230\129\182\230\180\158\231\169\180", -- "玛拉顿－邪恶洞穴"
 		["Maraudon - Foulspore Cavern"] = "\231\142\155\230\139\137\233\161\191\239\188\141\230\175\146\232\143\135\230\180\158\231\169\180", -- "玛拉顿－毒菇洞穴"
 		["Maraudon - Earth Song Falls"] = "\231\142\155\230\139\137\233\161\191\239\188\141\229\156\176\230\173\140\231\128\145\229\184\131", -- "玛拉顿－地歌瀑布"
@@ -265,13 +232,10 @@ local L = {
 		MANUAL_START = "\230\137\139\229\138\168\229\188\128\229\167\139", -- "手动开始"
 		RECORD_INSTANCE = "\232\174\176\229\189\149\229\137\175\230\156\172", -- "记录副本"
 		
-		BROKER_CLICK = "|cffFFFFFF\231\130\185\229\135\187|r\230\137\147\229\188\128\233\128\137\233\161\185\232\143\156\229\141\149",
+		BROKER_CLICK = "|cffFFFFFF点击|r打开选项菜单",
+		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-点击|r 启用或禁用插件",
 	},
 	zhTW = {
-		["Scarlet Monastery - Graveyard"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \229\162\147\229\156\176", -- "血色修道院 - 墓地"
-		["Scarlet Monastery - Library"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \229\156\150\230\155\184\233\164\168", -- "血色修道院 - 圖書館"
-		["Scarlet Monastery - Armory"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \232\187\141\230\162\176\229\186\171", -- "血色修道院 - 軍械庫"
-		["Scarlet Monastery - Cathedral"] = "\232\161\128\232\137\178\228\191\174\233\129\147\233\153\162 - \230\149\153\229\160\130", -- "血色修道院 - 教堂"
 		["Maraudon - The Wicked Grotto"] = "\231\145\170\230\139\137\233\160\147 - \233\130\170\230\131\161\230\180\158\231\169\180", -- "瑪拉頓 - 邪惡洞穴"
 		["Maraudon - Foulspore Cavern"] = "\231\145\170\230\139\137\233\160\147 - \230\175\146\232\143\135\230\180\158\231\169\180", -- "瑪拉頓 - 毒菇洞穴"
 		["Maraudon - Earth Song Falls"] = "\231\145\170\230\139\137\233\160\147 - \229\156\176\230\173\140\231\128\145\229\184\131", -- "瑪拉頓 - 地歌瀑布"

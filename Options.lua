@@ -297,13 +297,13 @@ function KIT:DataFrame()
 			if button == "LeftButton" then
 				f:StartSizing("BOTTOMRIGHT")
 				self:GetHighlightTexture():Hide() -- we only want to see the PushedTexture now 
-				SetCursor("UI-Cursor-Size") -- hide the cursor
+				--SetCursor("UI-Cursor-Size") -- hide the cursor
 			end
 		end)
 		rb:SetScript("OnMouseUp", function(self, button)
 			f:StopMovingOrSizing()
 			self:GetHighlightTexture():Show()
-			SetCursor(nil) -- show the cursor again
+			--SetCursor(nil) -- show the cursor again
 			eb:SetWidth(sf:GetWidth()) -- update editbox to the new scrollframe width
 		end)
 		
@@ -393,8 +393,16 @@ do
 			local instanceColor = S.pve[l.instanceType or "party"]
 			
 			if profile.Difficulty and l.difficulty then
-				-- check for Raid Finder first (boolean true)
-				local diff = (l.instanceType == "seasonal") and NOT_APPLICABLE or (l.difficulty == true) and PLAYER_DIFFICULTY3 or _G[S.pvediff[l.instanceType or "party"]..l.difficulty]
+				-- MoP (5.0.4) / KIT v1.0 changed to new difficultyIndex
+				local diff
+				if l.instanceType == "seasonal" then
+					diff = NOT_APPLICABLE
+				elseif l.difficulty == true then -- "old" raid finder
+					diff = RAID_FINDER
+				else
+					diff = S.difficulty[l.difficulty] -- most pre-mop data is wrong now ..
+				end
+				
 				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r |cffFFFF00%s|r - %s"..partyformat,
 					l.date, l.start, l["end"], instanceColor, l.zone, diff, self:Time(l.time), strjoin(", ", unpack(t[3]))))
 			else

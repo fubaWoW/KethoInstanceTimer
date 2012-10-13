@@ -4,7 +4,6 @@ local KIT = kInstanceTimer
 local ACD = LibStub("AceConfigDialog-3.0")
 local L = S.L
 
-local IsInInstance = IsInInstance
 local GetBattlefieldInstanceRunTime = GetBattlefieldInstanceRunTime
 
 	---------------------
@@ -15,11 +14,16 @@ local dataobject = {
 	type = "data source",
 	icon = "Interface\\Icons\\Spell_Holy_BorrowedTime",
 	OnClick = function(clickedframe, button)
-		ACD[ACD.OpenFrames.kInstanceTimer and "Close" or "Open"](ACD, NAME)
+		if IsModifierKeyDown() then
+			KIT:SlashCommand(KIT:IsEnabled() and "0" or "1")
+		else
+			ACD[ACD.OpenFrames.kInstanceTimer and "Close" or "Open"](ACD, "kInstanceTimer")
+		end
 	end,
 	OnTooltipShow = function(tt)
 		tt:AddLine("|cffADFF2F"..NAME.."|r")
 		tt:AddLine(L.BROKER_CLICK)
+		tt:AddLine(L.BROKER_SHIFT_CLICK)
 	end,
 }
 

@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 0.9.0 [2012.08.28]			---
+--- Version: 1.0 [2012.10.13]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -12,7 +12,7 @@
 -- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "0.9.0"
+S.VERSION = "1.0"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -33,6 +33,8 @@ local format, gsub = format, gsub
 
 S.args = {}
 local args = S.args
+
+S.PreBoss = {} -- instances divided in parts by Dungeon Finder
 
 	--------------
 	--- Events ---
@@ -61,14 +63,23 @@ S.pve = {
 	seasonal = "FFD700", -- imaginary instance type
 }
 
-S.pvediff = {
-	party = "PLAYER_DIFFICULTY",
-	raid = "RAID_DIFFICULTY",
-}
-
 S.pvp = {
 	pvp = true,
 	arena = true,
+}
+
+-- MoP (5.0.4) GetInstanceDifficulty() index
+S.difficulty = {
+	[1] = NONE,
+	[2] = PLAYER_DIFFICULTY1, -- "Normal" / Scenario
+	[3] = PLAYER_DIFFICULTY2, -- "Heroic"
+	[4] = RAID_DIFFICULTY1, -- "10 Player"
+	[5] = RAID_DIFFICULTY2, -- "25 Player"
+	[6] = RAID_DIFFICULTY3, -- "10 Player (Heroic)"
+	[7] = RAID_DIFFICULTY4, -- "25 Player (Heroic)"
+	[8] = RAID_FINDER, -- "Raid Finder"
+	[9] = CHALLENGE_MODE, -- "Challenge Mode"
+	[10] = RAID_DIFFICULTY_40PLAYER, -- "40 Player"
 }
 
 	----------------
@@ -77,17 +88,14 @@ S.pvp = {
 
 S.BossIDs = { -- Instance Timer
 	-- [1-60] Classic
-	[1853] = true, -- Darkmaster Gandling; Scholomance
+	[1853] = true, -- Darkmaster Gandling; Scholomance (deprecated?)
 	[2748] = true, -- Archaedas; Uldaman
-	[3975] = L["Scarlet Monastery - Armory"], -- Herod
-	[3977] = L["Scarlet Monastery - Cathedral"], -- High Inquisitor Whitemane
+	[3977] = true, -- High Inquisitor Whitemane; Scarlet Monastery (dies after "Commander Durand"; Untargetable "corpse")
 	[3654] = true, -- Mutanus the Devourer; Wailing Caverns
 	[4275] = true, -- Archmage Arugal; Shadowfang Keep (Normal/Heroic)
 	[4421] = true, -- Charlga Razorflank; Razorfen Kraul
-	[4543] = L["Scarlet Monastery - Graveyard"], -- Bloodmage Thalnos
 	[4829] = true, -- Aku'mai; Blackfathom Deeps
 	[5709] = true, -- Shade of Eranikus; Sunken Temple
-	[6487] = L["Scarlet Monastery - Library"], -- Arcanist Doan
 	[7267] = true, -- Chief Ukorz Sandscalp; Zul'Farrak
 	[7358] = true, -- Amnennar the Coldbringer; Razorfen Downs
 	[7800] = true, -- Mekgineer Thermaplugg; Gnomeregan
@@ -108,7 +116,9 @@ S.BossIDs = { -- Instance Timer
 	[46254] = true, -- Hogger; Stormwind Stockade
 	[47739] = true, -- "Captain" Cookie; Deadmines (Normal)
 	[49541] = true, -- Vanessa VanCleef; Deadmines (Heroic)
-
+	[59080] = true, -- Darkmaster Gandling; Scholomance (MoP; Heroic)
+	[59150] = true, -- Flameweaver Koegler; Scarlet Halls
+	
 	-- [60-70] The Burning Crusade
 	[16808] = true, -- Warchief Kargath Bladefist; Hellfire Citadel: The Shattered Halls
 	[17377] = true, -- Keli'dan the Breaker; Hellfire Citadel: The Blood Furnace
@@ -126,7 +136,7 @@ S.BossIDs = { -- Instance Timer
 	[18096] = true, -- Epoch Hunter; Caverns of Time: Old Hillsbrad Foothills
 	[19220] = true, -- Pathaleon the Calculator; Tempest Keep: The Mechanar
 	[20912] = true, -- Harbinger Skyriss; Tempest Keep: The Arcatraz
-
+	
 	-- [70-80] Wrath of the Lich King
 	[26632] = true, -- The Prophet Tharon'ja; Drak'Tharon Keep (name has an extra space at the end when transformed] = true, GUID remains unchanged though)
 	[26723] = true, -- Keristrasza; The Nexus: The Nexus
@@ -144,7 +154,7 @@ S.BossIDs = { -- Instance Timer
 --	[26533] = true, -- Mal'Ganis; Caverns of Time: The Culling of Stratholme (no death)
 --	[35451] = true, -- The Black Knight; Crusaders' Coliseum: Trial of the Champion (dies 3x)
 --	[36954] = true, -- The Lich King; Icecrown Citadel: Halls of Reflection (no death)
-
+	
 	-- [80-85] Cataclysm
 	[39705] = true, -- Ascendant Lord Obsidius; Blackrock Caverns
 	[39378] = true, -- Rajh; Halls of Origination
@@ -160,8 +170,13 @@ S.BossIDs = { -- Instance Timer
 	[54969] = true, -- Mannoroth; Well of Eternity (not sure if this one works)
 	[54938] = true, -- Archbishop Benedictus; Hour of Twilight
 	
-	-- [80-85] Mists of Pandaria
-	-- To Do
+	-- [85-90] Mists of Pandaria (Untested)
+	[56439] = true, -- Sha of Doubt; Temple of the Jade Serpent
+	[56877] = true, -- Raigonn; Gate of the Setting Sun
+	[56884] = true, -- Taran Zhu; Shado-Pan Monastery
+	[59479] = true, -- Yan-Zhu the Uncasked; Stormstout Brewery
+	[61398] = true, -- Xin the Weaponmaster; Mogu'shan Palace
+	[62205] = true, -- Wing Leader Ner'onok; Siege of Niuzao Temple
 }
 
 S.Seasonal = {
@@ -226,6 +241,11 @@ S.RaidBossIDs = { -- untested
 	[52409] = true, -- Ragnaros; Firelands
 	[55689] = L["The Siege of Wyrmrest Temple"], -- Hagara the Stormbinder; Dragon Soul (To Do: only when in Raid Finder)
 	[56173] = L["Fall of Deathwing"], -- Deathwing; Dragon Soul (no death)
+	
+	-- [85-90] Mists of Pandaria (Untested)
+	[60400] = true, -- Jan-xi (Will of the Emperor); Mogu'shan Vaults
+	[60999] = true, -- Sha of Fear; Terrace of Endless Spring
+	[62837] = true, -- Grand Empress Shek'zeer; Heart of Fear
 }
 
 -- Spell IDs instead of death events
@@ -238,7 +258,7 @@ S.SpellIDs = {
 	---------------------
 
 function KIT:GetInstanceTime()
-	return S.PreBoss or char.timeInstance
+	return S.PreBoss.time or char.timeInstance
 end
 
 function KIT:StartData()
@@ -249,7 +269,7 @@ function KIT:StartData()
 	
 	-- reset so the broker timer can start counting again
 	S.LastInst = nil	
-	S.PreBoss = nil
+	wipe(S.PreBoss)
 end
 
 function KIT:ResetTime(isLeave)
@@ -259,7 +279,7 @@ function KIT:ResetTime(isLeave)
 	
 	if isLeave then
 		S.LastInst = nil
-		S.PreBoss = nil
+		wipe(S.PreBoss)
 	end
 end
 
@@ -394,14 +414,13 @@ S.classCache = setmetatable({}, {__index = function(t, k)
 	return v
 end})
 
+function KIT:WipeCache()
+	wipe(S.classCache)
+end
+
 	------------
 	--- Rest ---
 	------------
-
-function KIT:NoGroup()
-	-- MoP (5.0.4): IsInGroup() supposedly replaces IsOnePersonParty()
-	return GetNumSubgroupMembers() == 0 and GetNumGroupMembers() == 0 and not IsInGroup()
-end
 
 function KIT:Zone()
 	return GetRealZoneText() or GetSubZoneText() or ZONE
@@ -434,7 +453,7 @@ function KIT:Record(override, seasonal)
 	local party = {}
 	
 	-- don't record (party) members for raid instances
-	if not (GetNumGroupMembers() > 0) then
+	if not IsInRaid() then
 		for i = 1, GetNumSubgroupMembers() do
 			local name, realm = UnitName("party"..i)
 			local class = select(2, UnitClass("party"..i))
@@ -442,17 +461,14 @@ function KIT:Record(override, seasonal)
 		end
 	end
 	
-	-- MoP (5.0.4): remove Raid Finder detection for now
-	--local isRaidFinder = (GetLFGModeType() == "raid")
-	
 	tinsert(char.TimeInstanceList, {
-		date = char.startDate,
-		start = char.startTime,
+		date = S.PreBoss.date or char.startDate,
+		start = S.PreBoss.start or char.startTime,
 		["end"] = date("%H:%M"),
 		zone = override or self:Zone(),
 		instanceType = seasonal and "seasonal" or S.instance,
-		difficulty = isRaidFinder or GetInstanceDifficulty(),
-		time = time() - char.timeInstance,
+		difficulty = GetInstanceDifficulty(),
+		time = time() - (S.PreBoss.time or char.timeInstance),
 		party = party,
 	})
 end
@@ -492,14 +508,14 @@ function KIT:InstanceText(isPreview, override)
 	if isPreview then
 		args.instance = "|cffA8A8FF"..self:Zone().."|r"
 		args.time = "|cff71D5FF"..self:Time(instanceTime > 0 and time() - instanceTime or exampleTime).."|r"
-		args.start = "|cffF6ADC6"..(instanceTime > 0 and char.startTime or date("%H:%M")).."|r"
+		args.start = "|cffF6ADC6"..(instanceTime > 0 and (S.PreBoss.start or char.startTime) or date("%H:%M")).."|r" -- note startTime can be an empty string
 		args["end"] = "|cffADFF2F"..date("%H:%M", time() + exampleTime).."|r" -- can't use keywords as a table key o_O
 		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
 		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
 	else
 		args.instance = override or self:Zone()
 		args.time = self:Time(instanceTime > 0 and time() - instanceTime or 0)
-		args.start = char.startTime
+		args.start = S.PreBoss.start or char.startTime
 		args["end"] = date("%H:%M")
 		args.date = date("%Y.%m.%d")
 		args.date2 = date("%m/%d/%y")

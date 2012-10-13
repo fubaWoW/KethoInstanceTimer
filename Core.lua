@@ -63,19 +63,31 @@ function KIT:OnEnable()
 	
 	-- support [Class Colors] by Phanx
 	if CUSTOM_CLASS_COLORS then
-		CUSTOM_CLASS_COLORS:RegisterCallback(function()
-			wipe(S.classCache)
-		end, self)
+		CUSTOM_CLASS_COLORS:RegisterCallback("WipeCache", self)
 	end
 	
 	-- player is not in a group (anymore) -> reset timer
-	if self:NoGroup() then
+	if not IsInGroup() then
 		self:ResetTime(true)
 	end
 	
 	-- initialize stopwatch while in an instance
 	if S.IsStopwatch() then
 		S.StopwatchStart()
+	end
+end
+
+function KIT:OnDisable()
+	-- maybe superfluous
+	self:UnregisterAllEvents()
+	self:CancelAllTimers() -- breaks broker timer and whatnot
+	
+	if CUSTOM_CLASS_COLORS then
+		CUSTOM_CLASS_COLORS:UnregisterCallback("WipeCache", self)
+	end
+	
+	if S.IsStopwatch() then
+		S.StopwatchEnd()
 	end
 end
 
@@ -91,8 +103,32 @@ function KIT:RefreshDB()
 	end
 end
 
-function KIT:SlashCommand()
-	ACD:Open(NAME)
+local enable = {
+	["1"] = true,
+	on = true,
+	enable = true,
+	load = true,
+}
+
+local disable = {
+	["0"] = true,
+	off = true,
+	disable = true,
+	unload = true,
+}
+
+function KIT:SlashCommand(input)
+	if enable[input] then
+		self:Enable()
+		self:Print("|cffADFF2F"..VIDEO_OPTIONS_ENABLED.."|r")
+	elseif disable[input] then
+		self:Disable()
+		self:Print("|cffFF2424"..VIDEO_OPTIONS_DISABLED.."|r")
+	elseif input == "toggle" then
+		self:SlashCommand(self:IsEnabled() and "0" or "1")
+	else
+		ACD:Open(NAME)
+	end
 end
 
 	-------------
@@ -111,7 +147,7 @@ function KIT:PLAYER_ENTERING_WORLD(event)
 		if profile.Stopwatch then
 			S.StopwatchStart()
 		end
-	elseif S.instance == "none" and self:NoGroup() then
+	elseif S.instance == "none" and not IsInGroup() then
 		-- left instance
 		self:ResetTime(true)
 		
@@ -133,12 +169,13 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 		local id = S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]
 		
 		if id and self:GetInstanceTime() > 0 then
+			local difficulty = GetInstanceDifficulty()
 			
 			-- damn you, cookie!
-			if destNPC == 47739 and GetInstanceDifficulty() == 2 then return end
+			if destNPC == 47739 and difficulty == 2 then return end
 			
 			-- [Hagara the Stormbinder] not raid finder mode
-			if destNPC == 55689 and GetLFGModeType() ~= "raid" then return end
+			if destNPC == 55689 and difficulty ~= 8 then return end
 			
 			-- exceptions/overrides
 			local override = (type(id) == "string") and id
@@ -155,9 +192,12 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 			
 			-- keep a backup time if the group decides to continue to the final boss
 			if S.PreBossIDs[destNPC] then
-				S.PreBoss = char.timeInstance
+				local t = S.PreBoss
+				t.date = char.startDate
+				t.start = char.startTime
+				t.time = char.timeInstance
 			elseif S.FinalBossIDs[destNPC] then
-				S.PreBoss = nil
+				wipe(S.PreBoss)
 			end
 			
 			self:Finalize()
