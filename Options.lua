@@ -113,7 +113,7 @@ S.options = {
 				RecordInstance = {
 					type = "toggle", order = 7,
 					width = "full", descStyle = "",
-					name = "|TInterface\\Icons\\Trade_Engineering:16:16:1:0"..crop.."|t  "..L.RECORD_INSTANCE,
+					name = "|TInterface\\Icons\\Trade_Engineering:16:16:1:0"..crop.."|t  "..L.RECORD_DATA,
 				},
 				Data = {
 					type = "execute", order = 8,

@@ -42,7 +42,7 @@ local L = {
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] cleared in <TIME> [<START>]-[<END>]",
 		MANUAL_RESET = TRACKER_SORT_MANUAL.." "..RESET,
 		MANUAL_START = TRACKER_SORT_MANUAL.." "..START,
-		RECORD_INSTANCE = "Record "..INSTANCE,
+		RECORD_DATA = "Record Data",
 		
 		TIME_FORMAT = "Time Format",
 		TIME_FORMAT_LEGACY = "Legacy Time Format",
@@ -75,8 +75,12 @@ local L = {
 		["The Frost Lord Ahune"] = "Frostf\195\188rst Ahune", -- "Frostfürst Ahune"
 		["The Crown Chemical Co."] = "Chemiemanufaktur Krone", -- "Chemiemanufaktur Krone"
 		
+		DATA = "Daten",
 		INSTANCE_TIMER = "Instanz-Zeitnehmer",
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] beendet in <TIME> [<START>]-[<END>]",
+		MANUAL_RESET = "Manuell zurücksetzen",
+		MANUAL_START = "Manuell starten",
+		RECORD_DATA = "Daten speichern",
 		
 		BROKER_CLICK = "|cffFFFFFFKlickt|r, um das Optionsmen\195\188 zu \195\182ffnen",
 		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-klickt|r, um dieses AddOn ein-/auszuschalten",
@@ -225,12 +229,12 @@ local L = {
 		["The Frost Lord Ahune"] = "\229\134\176\233\156\156\228\185\139\231\142\139\229\159\131\233\156\141\230\129\169", -- "冰霜之王埃霍恩"
 		["The Crown Chemical Co."] = "\231\154\135\229\134\160\232\141\175\229\137\130\229\133\172\229\143\184", -- "皇冠药剂公司"
 		
-		DATA = "\230\149\176\230\141\174", -- "数据"
-		INSTANCE_TIMER = "\229\137\175\230\156\172\232\174\161\230\151\182\229\153\168", -- "副本计时器"
-		INSTANCE_TIMER_MSG = "[<INSTANCE>] \229\183\178\229\174\140\230\136\144\239\188\140\231\148\168\230\151\182 <TIME> [<START>]-[<END>]", -- "[<INSTANCE>] 已完成，用时 <TIME> [<START>]-[<END>]"
-		MANUAL_RESET = "\230\137\139\229\138\168\233\135\141\231\189\174", -- "手动重置"
-		MANUAL_START = "\230\137\139\229\138\168\229\188\128\229\167\139", -- "手动开始"
-		RECORD_INSTANCE = "\232\174\176\229\189\149\229\137\175\230\156\172", -- "记录副本"
+		DATA = "数据",
+		INSTANCE_TIMER = "副本计时器",
+		INSTANCE_TIMER_MSG = "[<INSTANCE>] 已完成，用时 <TIME> [<START>]-[<END>]",
+		MANUAL_RESET = "手动重置",
+		MANUAL_START = "手动开始",
+		RECORD_DATA = "记录数据",
 		
 		BROKER_CLICK = "|cffFFFFFF点击|r打开选项菜单",
 		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-点击|r 启用或禁用插件",
@@ -255,8 +259,12 @@ local L = {
 		["The Frost Lord Ahune"] = "\229\134\176\233\156\156\233\160\152\228\184\187\232\137\190\232\131\161\230\129\169", -- "冰霜領主艾胡恩"
 		["The Crown Chemical Co."] = "\231\142\139\229\134\160\229\140\150\229\173\184\232\163\189\232\151\165\229\133\172\229\143\184", -- "王冠化學製藥公司"
 		
-		INSTANCE_TIMER = "\229\137\175\230\156\172\232\168\136\230\153\130\229\153\168", -- "副本計時器"
-		INSTANCE_TIMER_MSG = "[<INSTANCE>] <TIME> \229\133\167\233\135\141\231\189\174 [<START>]-[<END>]", -- "[<INSTANCE>] <TIME> 內重置 [<START>]-[<END>]"
+		DATA = "數據",
+		INSTANCE_TIMER = "副本計時器",
+		INSTANCE_TIMER_MSG = "[<INSTANCE>] <TIME> 內重置 [<START>]-[<END>]",
+		MANUAL_RESET = "手動重置",
+		MANUAL_START = "手動開始",
+		RECORD_DATA = "紀錄數據",
 	},
 }
 

@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 1.0 [2012.10.13]			---
+--- Version: 1.0.1 [2012.10.15]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -12,7 +12,7 @@
 -- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "1.0"
+S.VERSION = "1.0.1"
 S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
@@ -453,7 +453,7 @@ function KIT:Record(override, seasonal)
 	local party = {}
 	
 	-- don't record (party) members for raid instances
-	if not IsInRaid() then
+	if not IsInRaid() and IsInGroup() then
 		for i = 1, GetNumSubgroupMembers() do
 			local name, realm = UnitName("party"..i)
 			local class = select(2, UnitClass("party"..i))

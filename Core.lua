@@ -13,8 +13,6 @@ local profile, char
 	--- Ace3 Initialization ---
 	---------------------------
 
-local slashCmds = {"kit", "kinstance", "kinstancetimer"}
-
 function KIT:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("kInstanceTimerDB", S.defaults, true)
 
@@ -40,7 +38,7 @@ function KIT:OnInitialize()
 	--- Slash Commands ---
 	----------------------
 	
-	for _, v in ipairs(slashCmds) do
+	for _, v in ipairs({"kit", "kinstance", "kinstancetimer"}) do
 		self:RegisterChatCommand(v, "SlashCommand")
 	end
 	
@@ -161,10 +159,17 @@ end
 	--- End ---
 	-----------
 
+local npc = {
+	["3"] = true, -- npc
+	["5"] = true, -- vehicle; eg Gal'darah
+}
+
 function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	local timestamp, subevent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = ...
 	
-	if subevent == "UNIT_DIED" and strsub(destGUID, 5, 5) == "3" then
+	if subevent ~= "UNIT_DIED" then return end
+	
+	if npc[strsub(destGUID, 5, 5)] then
 		local destNPC = tonumber(strsub(destGUID, 7, 10), 16)
 		local id = S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]
 		
@@ -172,10 +177,10 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 			local difficulty = GetInstanceDifficulty()
 			
 			-- damn you, cookie!
-			if destNPC == 47739 and difficulty == 2 then return end
+			if destNPC == 47739 and difficulty == 3 then return end -- heroic
 			
-			-- [Hagara the Stormbinder] not raid finder mode
-			if destNPC == 55689 and difficulty ~= 8 then return end
+			-- "Hagara the Stormbinder"
+			if destNPC == 55689 and difficulty ~= 8 then return end -- not raid finder
 			
 			-- exceptions/overrides
 			local override = (type(id) == "string") and id
