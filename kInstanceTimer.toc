@@ -1,5 +1,5 @@
 ## Interface: 50001
-## Version: 1.0.1
+## Version: 1.0.2 alpha1
 ## Title: kInstanceTimer
 ## Notes: Instance Timer
 ## Author: Ketho @ EU-Boulderfist

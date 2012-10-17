@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 1.0.1 [2012.10.15]			---
+--- Version: 1.0.2 alpha1 [2012.10.17]	---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -12,8 +12,8 @@
 -- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "1.0.1"
-S.BUILD = "Release"
+S.VERSION = "1.0.2 alpha1"
+S.BUILD = "Alpha"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
 local KIT = kInstanceTimer

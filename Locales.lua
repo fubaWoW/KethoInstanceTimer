@@ -261,7 +261,7 @@ local L = {
 		
 		DATA = "數據",
 		INSTANCE_TIMER = "副本計時器",
-		INSTANCE_TIMER_MSG = "[<INSTANCE>] <TIME> 內重置 [<START>]-[<END>]",
+		INSTANCE_TIMER_MSG = "[<INSTANCE>] 已完成，用時 <TIME> [<START>]-[<END>]",
 		MANUAL_RESET = "手動重置",
 		MANUAL_START = "手動開始",
 		RECORD_DATA = "紀錄數據",
