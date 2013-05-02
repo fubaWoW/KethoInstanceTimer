@@ -1,5 +1,5 @@
-## Interface: 50001
-## Version: 1.0.2 alpha1
+## Interface: 50200
+## Version: 1.1.0
 ## Title: kInstanceTimer
 ## Notes: Instance Timer
 ## Author: Ketho @ EU-Boulderfist
@@ -21,6 +21,7 @@ Libs\AceConfig-3.0\AceConfig-3.0.xml
 Libs\LibSink-2.0\lib.xml
 #@end-no-lib-strip@
 
+Libs\LibSpreadsheet-1.0\LibSpreadsheet-1.0.lua
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
 Locales.lua

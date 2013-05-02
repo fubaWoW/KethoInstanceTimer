@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 1.0.2 alpha1 [2012.10.17]	---
+--- Version: 1.1.0 [2013.05.02]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -12,8 +12,8 @@
 -- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
 
 local NAME, S = ...
-S.VERSION = "1.0.2 alpha1"
-S.BUILD = "Alpha"
+S.VERSION = GetAddOnMetadata(NAME, "Version")
+S.BUILD = "Release"
 
 kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
 local KIT = kInstanceTimer
@@ -68,7 +68,6 @@ S.pvp = {
 	arena = true,
 }
 
--- MoP (5.0.4) GetInstanceDifficulty() index
 S.difficulty = {
 	[1] = NONE,
 	[2] = PLAYER_DIFFICULTY1, -- "Normal" / Scenario
@@ -467,7 +466,7 @@ function KIT:Record(override, seasonal)
 		["end"] = date("%H:%M"),
 		zone = override or self:Zone(),
 		instanceType = seasonal and "seasonal" or S.instance,
-		difficulty = GetInstanceDifficulty(),
+		difficulty = select(3, GetInstanceInfo()),
 		time = time() - (S.PreBoss.time or char.timeInstance),
 		party = party,
 	})

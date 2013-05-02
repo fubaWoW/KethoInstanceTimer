@@ -1,0 +1,16 @@
+------------------------------------------------------------------------
+r79 | humbedooh | 2010-11-28 09:27:12 +0000 (Sun, 28 Nov 2010) | 2 lines
+Changed paths:
+   M /trunk/LibSpreadsheet-1.0.lua
+
+Fixing a naming issue with some widgets
+Removed a debugging output that was causing (invisible) errors on logout
+------------------------------------------------------------------------
+r78 | humbedooh | 2010-10-25 19:08:40 +0000 (Mon, 25 Oct 2010) | 2 lines
+Changed paths:
+   M /trunk/LibSpreadsheet-1.0.lua
+   M /trunk/LibSpreadsheet-1.0.toc
+
+Updating TOC
+Removing OnLeave triggers as they aren't compatible with cataclysm.
+------------------------------------------------------------------------

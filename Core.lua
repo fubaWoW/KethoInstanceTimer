@@ -174,7 +174,7 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 		local id = S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]
 		
 		if id and self:GetInstanceTime() > 0 then
-			local difficulty = GetInstanceDifficulty()
+			local difficulty = select(3, GetInstanceInfo())
 			
 			-- damn you, cookie!
 			if destNPC == 47739 and difficulty == 3 then return end -- heroic
