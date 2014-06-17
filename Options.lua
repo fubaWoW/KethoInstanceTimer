@@ -2,7 +2,6 @@ local NAME, S = ...
 local KIT = kInstanceTimer
 
 local ACD = LibStub("AceConfigDialog-3.0")
-local LSS = LibStub("LibSpreadsheet-1.0")
 
 local L = S.L
 local profile, char
@@ -32,7 +31,8 @@ local REALM = FRIENDS_LIST_REALM:gsub(":", "")
 
 S.defaults = {
 	profile = {
-		Instance = true,
+		party = true,
+		scenario = true,
 		InstanceTimerMsg = L.INSTANCE_TIMER_MSG,
 		
 		RecordInstance = true,
@@ -62,15 +62,20 @@ S.options = {
 					name = "|cff3FBF3F"..L.INSTANCE_TIMER.."|r",
 					inline = true,
 					args = {
-						Instance = {
+						party = {
 							type = "toggle", order = 1,
 							width = "full", descStyle = "",
 							name = " |cffA8A8FF"..INSTANCE.."|r",
 						},
-						Raid = {
+						raid = {
 							type = "toggle", order = 2,
 							width = "full", descStyle = "",
 							name = " |cffFF7F00"..RAID.."|r",
+						},
+						scenario = {
+							type = "toggle", order = 3,
+							width = "full", descStyle = "",
+							name = " "..SCENARIOS,
 						},
 					},
 				},
@@ -225,30 +230,6 @@ end
 	--- DataFrame ---
 	-----------------
 
---[[
-function test()
-	book = LSS:Book("Some Book")
-	--book:StrictMode(true)
-	sheet = book:Add("Some Sheet")
-	
-	sheet:AddColumn("Date", "Instance", "Time", "Party")
-	sheet:AddRow("Hello", "World", "Banana", "Yolo Swaggins")
-
-	local f = CreateFrame("Frame", "Blaat", UIParent, "DialogBoxFrame")
-	f:SetPoint("CENTER")
-	f:SetSize(500, 500)
-	
-	local render = book:Render()
-	render:SetParent(f);
-	render:SetPoint("LEFT", 10, 0)
-	render:SetPoint("RIGHT", -20, 0)
-	render:SetPoint("TOP", 0, -10)
-	render:SetPoint("BOTTOM", BlaatButton, "TOP", 0, 0)
-	render:Show()
-	f:Show()
-end
-]]
-
 -- I peeked into Prat's CopyChat code for the ScrollFrame & EditBox <.<
 -- and FloatingChatFrameTemplate for the ResizeButton >.>
 function KIT:DataFrame()
@@ -322,13 +303,11 @@ function KIT:DataFrame()
 			if button == "LeftButton" then
 				f:StartSizing("BOTTOMRIGHT")
 				self:GetHighlightTexture():Hide() -- we only want to see the PushedTexture now 
-				--SetCursor("UI-Cursor-Size") -- hide the cursor
 			end
 		end)
 		rb:SetScript("OnMouseUp", function(self, button)
 			f:StopMovingOrSizing()
 			self:GetHighlightTexture():Show()
-			--SetCursor(nil) -- show the cursor again
 			eb:SetWidth(sf:GetWidth()) -- update editbox to the new scrollframe width
 		end)
 		

@@ -60,6 +60,7 @@ S.events = {
 S.pve = {
 	party = "A8A8FF",
 	raid = "FF7F00",
+	scenario = "FFFFFF",
 	seasonal = "FFD700", -- imaginary instance type
 }
 
@@ -68,17 +69,20 @@ S.pvp = {
 	arena = true,
 }
 
+-- pre 1.3 data is now obsolete
 S.difficulty = {
-	[1] = NONE,
-	[2] = PLAYER_DIFFICULTY1, -- "Normal" / Scenario
-	[3] = PLAYER_DIFFICULTY2, -- "Heroic"
-	[4] = RAID_DIFFICULTY1, -- "10 Player"
-	[5] = RAID_DIFFICULTY2, -- "25 Player"
-	[6] = RAID_DIFFICULTY3, -- "10 Player (Heroic)"
-	[7] = RAID_DIFFICULTY4, -- "25 Player (Heroic)"
-	[8] = RAID_FINDER, -- "Raid Finder"
-	[9] = CHALLENGE_MODE, -- "Challenge Mode"
-	[10] = RAID_DIFFICULTY_40PLAYER, -- "40 Player"
+	[1] = PLAYER_DIFFICULTY1, -- "Normal",
+	[2] = PLAYER_DIFFICULTY2, -- "Heroic"
+	[3] = RAID_DIFFICULTY1, -- "10 Player"
+	[4] = RAID_DIFFICULTY2, -- "25 Player"
+	[5] = RAID_DIFFICULTY3, -- "10 Player (Heroic)"
+	[6] = RAID_DIFFICULTY4, -- "25 Player (Heroic)"
+	[7] = PLAYER_DIFFICULTY3, -- "Raid Finder"
+	[8] = CHALLENGE_MODE, -- "Challenge Mode"
+	[9] = RAID_DIFFICULTY_40PLAYER, -- "40 Player"
+	[11] = GUILD_CHALLENGE_TYPE4, -- "Scenario"
+	[12] = HEROIC_SCENARIO, -- "Heroic Scenario"
+	[14] = PLAYER_DIFFICULTY4, -- "Flexible";
 }
 
 	----------------

@@ -32,7 +32,7 @@ function KIT:OnInitialize()
 	
 	ACR:RegisterOptionsTable(NAME, S.options)
 	ACD:AddToBlizOptions(NAME, NAME)
-	ACD:SetDefaultSize(NAME, 550, 410)
+	ACD:SetDefaultSize(NAME, 550, 430)
 	
 	----------------------
 	--- Slash Commands ---
@@ -170,7 +170,7 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	if subevent ~= "UNIT_DIED" then return end
 	
 	if npc[strsub(destGUID, 5, 5)] then
-		local destNPC = tonumber(strsub(destGUID, 7, 10), 16)
+		local destNPC = tonumber(strsub(destGUID, 6, 10), 16)
 		local id = S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]
 		
 		if id and self:GetInstanceTime() > 0 then
@@ -191,7 +191,7 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 			end
 			
 			-- Report
-			if (profile.Instance and S.BossIDs[destNPC]) or (profile.Raid and S.RaidBossIDs[destNPC]) then
+			if (profile.party and S.BossIDs[destNPC]) or (profile.raid and S.RaidBossIDs[destNPC]) then
 				self:Pour(self:InstanceText(nil, override))
 			end
 			
@@ -257,7 +257,7 @@ function KIT:LFG_COMPLETION_REWARD(event)
 				self:Record()
 			end
 			
-			if (profile.Instance and S.instance == "party") or (profile.Raid and S.instance == "raid") then
+			if profile[S.instance] then
 				self:Pour(self:InstanceText())
 			end
 			
@@ -279,7 +279,7 @@ function KIT:UNIT_SPELLCAST_SUCCEEDED(event, unit, name, _, _, spellID)
 			self:Record(override)
 		end
 		
-		if (profile.Instance and S.instance == "party") or (profile.Raid and S.instance == "raid") then
+		if profile[S.instance] then
 			self:Pour(self:InstanceText(nil, override))
 		end
 		
