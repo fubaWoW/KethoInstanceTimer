@@ -2,21 +2,18 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 1.2.0 [2013.05.23]			---
+--- Version: 2.0 [2014.11.08]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
 
--- To Do:
--- * new record time
--- * Check BossTargetFrameTemplate how Blizzard sees when a boss dies
-
 local NAME, S = ...
 S.VERSION = GetAddOnMetadata(NAME, "Version")
 S.BUILD = "Release"
+S.NAME = "Ketho InstanceTimer"
 
-kInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0", "LibSink-2.0")
-local KIT = kInstanceTimer
+KethoInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceConsole-3.0", "LibSink-2.0")
+local KIT = KethoInstanceTimer
 KIT.S = S -- debug purpose
 
 local L = S.L
@@ -34,8 +31,6 @@ local format, gsub = format, gsub
 S.args = {}
 local args = S.args
 
-S.PreBoss = {} -- instances divided in parts by Dungeon Finder
-
 	--------------
 	--- Events ---
 	--------------
@@ -46,10 +41,9 @@ S.events = {
 	"CHAT_MSG_SYSTEM",
 	
 	-- fallback/secondary events
-	"LFG_PROPOSAL_SUCCEEDED", -- this doesn't seem to fire anymore :(
+	"LFG_PROPOSAL_SUCCEEDED",
 	"LFG_COMPLETION_REWARD",
-	
-	"UNIT_SPELLCAST_SUCCEEDED",
+	"SCENARIO_COMPLETED",
 }
 
 	----------------------
@@ -69,7 +63,6 @@ S.pvp = {
 	arena = true,
 }
 
--- pre 1.3 data is now obsolete
 S.difficulty = {
 	[1] = PLAYER_DIFFICULTY1, -- "Normal",
 	[2] = PLAYER_DIFFICULTY2, -- "Heroic"
@@ -80,16 +73,21 @@ S.difficulty = {
 	[7] = PLAYER_DIFFICULTY3, -- "Raid Finder"
 	[8] = CHALLENGE_MODE, -- "Challenge Mode"
 	[9] = RAID_DIFFICULTY_40PLAYER, -- "40 Player"
-	[11] = GUILD_CHALLENGE_TYPE4, -- "Scenario"
-	[12] = HEROIC_SCENARIO, -- "Heroic Scenario"
-	[14] = PLAYER_DIFFICULTY4, -- "Flexible";
+	[11] = HEROIC_SCENARIO, -- "Heroic Scenario"
+	[12] = GUILD_CHALLENGE_TYPE4, -- "Scenario"
+	[14] = FLEX_RAID, -- ""Flexible Raid""
+	[15] = PLAYER_DIFFICULTY2.." "..FLEX_RAID, -- Heroic Flexible Raid
+	[16] = PLAYER_DIFFICULTY6, --"Mythic"
+	[17] = PLAYER_DIFFICULTY4.." "..PLAYER_DIFFICULTY3, -- Flexible Raid Finder
 }
 
 	----------------
 	--- Boss IDs ---
 	----------------
 
-S.BossIDs = { -- Instance Timer
+-- use SCENARIO_COMPLETED since WoD
+--[[
+S.BossIDs = {
 	-- [1-60] Classic
 	[1853] = true, -- Darkmaster Gandling; Scholomance (deprecated?)
 	[2748] = true, -- Archaedas; Uldaman
@@ -141,7 +139,7 @@ S.BossIDs = { -- Instance Timer
 	[20912] = true, -- Harbinger Skyriss; Tempest Keep: The Arcatraz
 	
 	-- [70-80] Wrath of the Lich King
-	[26632] = true, -- The Prophet Tharon'ja; Drak'Tharon Keep (name has an extra space at the end when transformed] = true, GUID remains unchanged though)
+	[26632] = true, -- The Prophet Tharon'ja; Drak'Tharon Keep (name has an trailing space at the end when transformed, GUID remains unchanged)
 	[26723] = true, -- Keristrasza; The Nexus: The Nexus
 	[26861] = true, -- King Ymiron; Utgarde Keep: Utgarde Pinnacle
 	[27656] = true, -- Ley-Guardian Eregos; The Nexus: The Oculus
@@ -157,56 +155,8 @@ S.BossIDs = { -- Instance Timer
 --	[26533] = true, -- Mal'Ganis; Caverns of Time: The Culling of Stratholme (no death)
 --	[35451] = true, -- The Black Knight; Crusaders' Coliseum: Trial of the Champion (dies 3x)
 --	[36954] = true, -- The Lich King; Icecrown Citadel: Halls of Reflection (no death)
-	
-	-- [80-85] Cataclysm
-	[39705] = true, -- Ascendant Lord Obsidius; Blackrock Caverns
-	[39378] = true, -- Rajh; Halls of Origination
-	[40484] = true, -- Erudax; Grim Batol
-	[42333] = true, -- High Priestess Azil; The Stonecore
-	[43875] = true, -- Asaad; The Vortex Pinnacle
---	[44566] = true, -- Ozumat; Throne of the Tides [no death; 1hp]
-	[44819] = true, -- Siamat; Lost City of the Tol'vir
-	[52148] = true, -- Jin'do the Godbreaker; Zul'Gurub (does he actually die?)
---	[52150] = true, -- Jin'do the Godbreaker; Zul'Gurub (the phase 2 version)
-	[23863] = true, -- Daakara; Zul'Aman
-	[54432] = true, -- Murozond; End Time
-	[54969] = true, -- Mannoroth; Well of Eternity (not sure if this one works)
-	[54938] = true, -- Archbishop Benedictus; Hour of Twilight
-	
-	-- [85-90] Mists of Pandaria (Untested)
-	[56439] = true, -- Sha of Doubt; Temple of the Jade Serpent
-	[56877] = true, -- Raigonn; Gate of the Setting Sun
-	[56884] = true, -- Taran Zhu; Shado-Pan Monastery
-	[59479] = true, -- Yan-Zhu the Uncasked; Stormstout Brewery
-	[61398] = true, -- Xin the Weaponmaster; Mogu'shan Palace
-	[62205] = true, -- Wing Leader Ner'onok; Siege of Niuzao Temple
 }
-
-S.Seasonal = {
-	[23682] = L["The Headless Horseman"], -- "Headless Horseman", Hallow's End
-	[23872] = L["Coren Direbrew"], -- "Coren Direbrew", Brewfest
-	[25740] = L["The Frost Lord Ahune"], -- "Ahune", Midsummer Fire Festival; transforms into "Frozen Core"
-	[25865] = L["The Frost Lord Ahune"], -- "Frozen Core"; Midsummer Fire Festival
-	[36296] = L["The Crown Chemical Co."], -- "Apothecary Hummel", Love is in the Air
-}
-
--- copy seasonal into boss ids, so we can still differentiate between them
-for k, v in pairs(S.Seasonal) do
-	S.BossIDs[k] = v
-end
-
-S.PreBossIDs = {
-	[12236] = true, -- Lord Vyletongue; Maraudon
-	[12258] = true, -- Razorlash; Maraudon
-	[9018] = true, -- High Interrogator Gerstahn; Blackrock Depths
-	[10813] = true, -- Balnazzar; Stratholme
-}
-
-S.FinalBossIDs = {
-	[12201] = true, -- Princess Theradras; Maraudon
-	[9019] = true, -- Emperor Dagran Thaurissan; Blackrock Depths
-	[45412] = true, -- Lord Aurius Rivendare; Stratholme
-}
+]]
 
 S.RaidBossIDs = { -- untested
 	-- [1-60] Classic
@@ -251,28 +201,25 @@ S.RaidBossIDs = { -- untested
 	[62837] = true, -- Grand Empress Shek'zeer; Heart of Fear
 }
 
--- Spell IDs instead of death events
-S.SpellIDs = {
-	[110101] = L["Fall of Deathwing"], -- "Death"; "Deathwing"
+S.Seasonal = {
+	[23682] = L["The Headless Horseman"], -- "Headless Horseman", Hallow's End
+	[23872] = L["Coren Direbrew"], -- "Coren Direbrew", Brewfest
+	[25740] = L["The Frost Lord Ahune"], -- "Ahune", Midsummer Fire Festival; transforms into "Frozen Core"
+	[25865] = L["The Frost Lord Ahune"], -- "Frozen Core"; Midsummer Fire Festival
+	[36296] = L["The Crown Chemical Co."], -- "Apothecary Hummel", Love is in the Air
 }
 
 	---------------------
 	--- Instance Time ---
 	---------------------
 
-function KIT:GetInstanceTime()
-	return S.PreBoss.time or char.timeInstance
-end
-
 function KIT:StartData()
 	char.timeInstance = time()
-	
 	char.startDate = date("%Y.%m.%d")
 	char.startTime = date("%H:%M")
 	
 	-- reset so the broker timer can start counting again
-	S.LastInst = nil	
-	wipe(S.PreBoss)
+	S.LastInst = nil
 end
 
 function KIT:ResetTime(isLeave)
@@ -282,7 +229,6 @@ function KIT:ResetTime(isLeave)
 	
 	if isLeave then
 		S.LastInst = nil
-		wipe(S.PreBoss)
 	end
 end
 
@@ -372,20 +318,17 @@ end
 	-----------------
 
 function S.StopwatchStart()
-	local v
-	
 	if S.pve[S.instance] then
-		v = KIT:GetInstanceTime()
+		if char.timeInstance > 0 then
+			StopwatchTicker.timer = time() - char.timeInstance
+		else
+			Stopwatch_Clear()
+		end
 	elseif S.pvp[S.instance] then
-		v = GetBattlefieldInstanceRunTime()
+		StopwatchTicker.timer = GetBattlefieldInstanceRunTime()/1000
 	end
 	
-	StopwatchFrame:Show()
-	if v and v > 0 then
-		StopwatchTicker.timer = time() - v
-	else
-		Stopwatch_Clear()
-	end
+	StopwatchFrame:Show()	
 	Stopwatch_Play()
 end
 
@@ -435,12 +378,11 @@ function KIT:Finalize()
 	end
 	
 	if profile.Screenshot then
-		self:ScheduleTimer(Screenshot, 1)
+		C_Timer.After(1, Screenshot)
 	end
 	
 	-- pause LibDataBroker display 
-	local startTime = self:GetInstanceTime()
-	S.LastInst = startTime > 0 and time() - startTime
+	S.LastInst = (char.timeInstance > 0) and time() - char.timeInstance
 	
 	-- reset variables
 	self:ResetTime()
@@ -460,18 +402,21 @@ function KIT:Record(override, seasonal)
 		for i = 1, GetNumSubgroupMembers() do
 			local name, realm = UnitName("party"..i)
 			local class = select(2, UnitClass("party"..i))
-			party[i] = {name, realm or GetRealmName(), class}
+			if not realm or realm == "" then
+				realm = GetRealmName() -- WoD empty string fix
+			end
+			party[i] = {name, realm, class}
 		end
 	end
 	
 	tinsert(char.TimeInstanceList, {
-		date = S.PreBoss.date or char.startDate,
-		start = S.PreBoss.start or char.startTime,
+		date = char.startDate,
+		start = char.startTime,
 		["end"] = date("%H:%M"),
 		zone = override or self:Zone(),
 		instanceType = seasonal and "seasonal" or S.instance,
 		difficulty = select(3, GetInstanceInfo()),
-		time = time() - (S.PreBoss.time or char.timeInstance),
+		time = time() - char.timeInstance,
 		party = party,
 	})
 end
@@ -506,19 +451,18 @@ local exampleTime = random(3600)
 
 function KIT:InstanceText(isPreview, override)
 	wipe(args)
-	local instanceTime = self:GetInstanceTime()
 	
 	if isPreview then
 		args.instance = "|cffA8A8FF"..self:Zone().."|r"
-		args.time = "|cff71D5FF"..self:Time(instanceTime > 0 and time() - instanceTime or exampleTime).."|r"
-		args.start = "|cffF6ADC6"..(instanceTime > 0 and (S.PreBoss.start or char.startTime) or date("%H:%M")).."|r" -- note startTime can be an empty string
+		args.time = "|cff71D5FF"..self:Time(char.timeInstance > 0 and time() - char.timeInstance or exampleTime).."|r"
+		args.start = "|cffF6ADC6"..(char.timeInstance > 0 and char.startTime or date("%H:%M")).."|r" -- note startTime can be an empty string
 		args["end"] = "|cffADFF2F"..date("%H:%M", time() + exampleTime).."|r" -- can't use keywords as a table key o_O
 		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
 		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
 	else
 		args.instance = override or self:Zone()
-		args.time = self:Time(instanceTime > 0 and time() - instanceTime or 0)
-		args.start = S.PreBoss.start or char.startTime
+		args.time = self:Time(char.timeInstance > 0 and time() - char.timeInstance or 0)
+		args.start = char.startTime
 		args["end"] = date("%H:%M")
 		args.date = date("%Y.%m.%d")
 		args.date2 = date("%m/%d/%y")

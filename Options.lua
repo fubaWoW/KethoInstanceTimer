@@ -1,5 +1,5 @@
 local NAME, S = ...
-local KIT = kInstanceTimer
+local KIT = KethoInstanceTimer
 
 local ACD = LibStub("AceConfigDialog-3.0")
 
@@ -48,7 +48,7 @@ S.defaults = {
 S.options = {
 	type = "group",
 	childGroups = "tab",
-	name = format("%s |cffADFF2Fv%s|r", NAME, S.VERSION),
+	name = format("%s |cffADFF2Fv%s|r", S.NAME, S.VERSION),
 	args = {
 		main = {
 			type = "group", order = 1,
@@ -233,8 +233,8 @@ end
 -- I peeked into Prat's CopyChat code for the ScrollFrame & EditBox <.<
 -- and FloatingChatFrameTemplate for the ResizeButton >.>
 function KIT:DataFrame()
-	if not kInstanceTimerData then
-		local f = CreateFrame("Frame", "kInstanceTimerData", UIParent, "DialogBoxFrame")
+	if not KethoInstanceTimerData then
+		local f = CreateFrame("Frame", "KethoInstanceTimerData", UIParent, "DialogBoxFrame")
 		f:SetPoint("CENTER"); f:SetSize(1000, 500)
 		
 		f:SetBackdrop({
@@ -262,17 +262,17 @@ function KIT:DataFrame()
 	--- ScrollFrame ---
 	-------------------
 		
-		local sf = CreateFrame("ScrollFrame", "kInstanceTimerDataScrollFrame", kInstanceTimerData, "UIPanelScrollFrameTemplate")
+		local sf = CreateFrame("ScrollFrame", "KethoInstanceTimerDataScrollFrame", KethoInstanceTimerData, "UIPanelScrollFrameTemplate")
 		sf:SetPoint("LEFT", 16, 0)
 		sf:SetPoint("RIGHT", -32, 0)
 		sf:SetPoint("TOP", 0, -16)
-		sf:SetPoint("BOTTOM", kInstanceTimerDataButton, "TOP", 0, 0)
+		sf:SetPoint("BOTTOM", KethoInstanceTimerDataButton, "TOP", 0, 0)
 		
 	---------------
 	--- EditBox ---
 	---------------
 		
-		local eb = CreateFrame("EditBox", "kInstanceTimerDataEditBox", kInstanceTimerDataScrollFrame)
+		local eb = CreateFrame("EditBox", "KethoInstanceTimerDataEditBox", KethoInstanceTimerDataScrollFrame)
 		eb:SetSize(sf:GetSize()) -- seems inheriting the points won't automatically set the width/size
 		
 		eb:SetMultiLine(true)
@@ -292,7 +292,7 @@ function KIT:DataFrame()
 		f:SetResizable(true)
 		f:SetMinResize(150, 100) -- at least show the "okay" button
 		
-		local rb = CreateFrame("Button", "kInstanceTimerDataResizeButton", kInstanceTimerData)
+		local rb = CreateFrame("Button", "KethoInstanceTimerDataResizeButton", KethoInstanceTimerData)
 		rb:SetPoint("BOTTOMRIGHT", -6, 7); rb:SetSize(16, 16)
 		
 		rb:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
@@ -315,7 +315,7 @@ function KIT:DataFrame()
 	--- Realm ---
 	-------------
 		
-		local realm = CreateFrame("CheckButton", nil, kInstanceTimerData, "UICheckButtonTemplate")
+		local realm = CreateFrame("CheckButton", nil, KethoInstanceTimerData, "UICheckButtonTemplate")
 		realm:SetPoint("BOTTOMLEFT", 8, 7)
 		realm.text:SetText(REALM)
 		realm.text:SetFont("Fonts\\FRIZQT__.TTF", 16)
@@ -330,7 +330,7 @@ function KIT:DataFrame()
 	--- Difficulty ---
 	------------------
 		
-		local diff = CreateFrame("CheckButton", nil, kInstanceTimerData, "UICheckButtonTemplate")
+		local diff = CreateFrame("CheckButton", nil, KethoInstanceTimerData, "UICheckButtonTemplate")
 		diff:SetPoint("BOTTOMLEFT", 140, 7)
 		diff.text:SetText(DUNGEON_DIFFICULTY)
 		diff.text:SetFont("Fonts\\FRIZQT__.TTF", 16)
@@ -343,20 +343,16 @@ function KIT:DataFrame()
 		
 		f:Show()
 	else
-		kInstanceTimerData:Show()
+		KethoInstanceTimerData:Show()
 	end
 	
-	if ACD.OpenFrames.kInstanceTimer then
+	if ACD.OpenFrames.KethoInstanceTimer then
 		-- the ACD window's Strata is "FULLSCREEN_DIALOG", and changing FrameLevels seems troublesome
-		kInstanceTimerData:SetFrameStrata("TOOLTIP")
+		KethoInstanceTimerData:SetFrameStrata("TOOLTIP")
 	end
 	
-	kInstanceTimerDataEditBox:SetText(self:GetData())
+	KethoInstanceTimerDataEditBox:SetText(self:GetData())
 	GameTooltip:Hide() -- most likely the popup frame will prevent the GameTooltip's OnLeave script from firing
-end
-
-local function IsLegacy()
-	return char.timeInstanceList and next(char.timeInstanceList)
 end
 
 do
@@ -367,18 +363,6 @@ do
 		for i = 1, 4 do
 			t[i] = t[i] or {}
 			wipe(t[i])
-		end
-		
-		if IsLegacy() then
-			for k in pairs(char.timeInstanceList) do
-				tinsert(t[1], k)
-			end
-			
-			sort(t[1])
-			
-			for i = #t[1], 1, -1 do
-				tinsert(t[2], t[1][i].." "..char.timeInstanceList[t[1][i]])
-			end
 		end
 		
 		for i = #char.TimeInstanceList, 1, -1 do
@@ -400,11 +384,9 @@ do
 				-- MoP (5.0.4) / KIT v1.0 changed to new difficultyIndex
 				local diff
 				if l.instanceType == "seasonal" then
-					diff = NOT_APPLICABLE
-				elseif l.difficulty == true then -- "old" raid finder
-					diff = RAID_FINDER
+					diff = "Seasonal"
 				else
-					diff = S.difficulty[l.difficulty] -- most pre-mop data is wrong now ..
+					diff = S.difficulty[l.difficulty] or NONE -- most pre-mop data is wrong now ..
 				end
 				
 				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r |cffFFFF00%s|r - %s"..partyformat,
@@ -417,8 +399,6 @@ do
 			wipe(t[3]) -- wipe for next iteration
 		end
 		
-		local legacy = IsLegacy() and "\n\n"..strjoin("\n", unpack(t[2])) or ""
-		
-		return strjoin("\n", unpack(t[4]))..legacy
+		return strjoin("\n", unpack(t[4]))
 	end
 end

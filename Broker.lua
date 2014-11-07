@@ -1,5 +1,5 @@
 local NAME, S = ...
-local KIT = kInstanceTimer
+local KIT = KethoInstanceTimer
 
 local ACD = LibStub("AceConfigDialog-3.0")
 local L = S.L
@@ -17,11 +17,11 @@ local dataobject = {
 		if IsModifierKeyDown() then
 			KIT:SlashCommand(KIT:IsEnabled() and "0" or "1")
 		else
-			ACD[ACD.OpenFrames.kInstanceTimer and "Close" or "Open"](ACD, "kInstanceTimer")
+			ACD[ACD.OpenFrames[NAME] and "Close" or "Open"](ACD, NAME)
 		end
 	end,
 	OnTooltipShow = function(tt)
-		tt:AddLine("|cffADFF2F"..NAME.."|r")
+		tt:AddLine("|cffADFF2F"..S.NAME.."|r")
 		tt:AddLine(L.BROKER_CLICK)
 		tt:AddLine(L.BROKER_SHIFT_CLICK)
 	end,
@@ -47,14 +47,14 @@ end
 	--- Timer ---
 	-------------
 
-KIT:ScheduleRepeatingTimer(function()
+C_Timer.NewTicker(1, function()
 	if S.pvp[S.instance] then -- no idea about arena
 		local bgTime = GetBattlefieldInstanceRunTime() or 0
 		dataobject.text = MilitaryTime(bgTime / 1000)
 	else
-		local istanceTime = KIT:GetInstanceTime()
-		dataobject.text = MilitaryTime(S.LastInst and S.LastInst or (istanceTime > 0 and time() - istanceTime or 0))
+		local timeInstance = KIT.db.char.timeInstance
+		dataobject.text = MilitaryTime(S.LastInst and S.LastInst or (timeInstance > 0 and time() - timeInstance or 0))
 	end
-end, 1)
+end)
 
 LibStub("LibDataBroker-1.1"):NewDataObject(NAME, dataobject)

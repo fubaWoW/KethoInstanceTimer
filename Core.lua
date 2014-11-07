@@ -1,5 +1,5 @@
 local NAME, S = ...
-local KIT = kInstanceTimer
+local KIT = KethoInstanceTimer
 
 local ACR = LibStub("AceConfigRegistry-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
@@ -14,13 +14,13 @@ local profile, char
 	---------------------------
 
 function KIT:OnInitialize()
-	self.db = LibStub("AceDB-3.0"):New("kInstanceTimerDB", S.defaults, true)
-
+	self.db = LibStub("AceDB-3.0"):New("KethoInstanceTimerDB", S.defaults, true)
+	
 	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshDB")
 	self.db.RegisterCallback(self, "OnProfileCopied", "RefreshDB")
 	self.db.RegisterCallback(self, "OnProfileReset", "RefreshDB")
 	self:RefreshDB()
-
+	
 	self.db.global.version = S.VERSION
 	self.db.global.build = S.BUILD
 	
@@ -31,14 +31,14 @@ function KIT:OnInitialize()
 	options.args.profiles.order = 4
 	
 	ACR:RegisterOptionsTable(NAME, S.options)
-	ACD:AddToBlizOptions(NAME, NAME)
+	ACD:AddToBlizOptions(NAME, S.NAME)
 	ACD:SetDefaultSize(NAME, 550, 430)
 	
 	----------------------
 	--- Slash Commands ---
 	----------------------
 	
-	for _, v in ipairs({"kit", "kinstance", "kinstancetimer"}) do
+	for _, v in ipairs({"kit", "kinstance", "kinstancetimer", "kethoinstance", "kethoinstancetimer"}) do
 		self:RegisterChatCommand(v, "SlashCommand")
 	end
 	
@@ -71,14 +71,13 @@ function KIT:OnEnable()
 	
 	-- initialize stopwatch while in an instance
 	if S.IsStopwatch() then
+		S.instance = select(2, IsInInstance())
 		S.StopwatchStart()
 	end
 end
 
 function KIT:OnDisable()
-	-- maybe superfluous
 	self:UnregisterAllEvents()
-	self:CancelAllTimers() -- breaks broker timer and whatnot
 	
 	if CUSTOM_CLASS_COLORS then
 		CUSTOM_CLASS_COLORS:UnregisterCallback("WipeCache", self)
@@ -138,7 +137,7 @@ function KIT:PLAYER_ENTERING_WORLD(event)
 	
 	if S.pve[S.instance] then
 		-- entered instance
-		if self:GetInstanceTime() == 0 then
+		if char.timeInstance == 0 then
 			self:StartData()
 		end
 		
@@ -160,8 +159,8 @@ end
 	-----------
 
 local npc = {
-	["3"] = true, -- npc
-	["5"] = true, -- vehicle; eg Gal'darah
+	Creature = true,
+	Vehicle = true,
 }
 
 function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
@@ -169,44 +168,25 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	
 	if subevent ~= "UNIT_DIED" then return end
 	
-	if npc[strsub(destGUID, 5, 5)] then
-		local destNPC = tonumber(strsub(destGUID, 6, 10), 16)
-		local id = S.BossIDs[destNPC] or S.RaidBossIDs[destNPC]
+	local unitType, _, _, _, _, npcId = strsplit(":", destGUID)
+	npcId = tonumber(npcId)
+	local id = S.RaidBossIDs[npcId] or S.Seasonal[npcId]
+	
+	if npc[unitType] and id and char.timeInstance > 0 then
+		-- exceptions/overrides
+		local override = (type(id) == "string") and id
 		
-		if id and self:GetInstanceTime() > 0 then
-			local difficulty = select(3, GetInstanceInfo())
-			
-			-- damn you, cookie!
-			if destNPC == 47739 and difficulty == 3 then return end -- heroic
-			
-			-- "Hagara the Stormbinder"
-			if destNPC == 55689 and difficulty ~= 8 then return end -- not raid finder
-			
-			-- exceptions/overrides
-			local override = (type(id) == "string") and id
-			
-			-- Record
-			if profile.RecordInstance then
-				self:Record(override, S.Seasonal[destNPC])
-			end
-			
-			-- Report
-			if (profile.party and S.BossIDs[destNPC]) or (profile.raid and S.RaidBossIDs[destNPC]) then
-				self:Pour(self:InstanceText(nil, override))
-			end
-			
-			-- keep a backup time if the group decides to continue to the final boss
-			if S.PreBossIDs[destNPC] then
-				local t = S.PreBoss
-				t.date = char.startDate
-				t.start = char.startTime
-				t.time = char.timeInstance
-			elseif S.FinalBossIDs[destNPC] then
-				wipe(S.PreBoss)
-			end
-			
-			self:Finalize()
+		-- Record
+		if profile.RecordInstance then
+			self:Record(override, S.Seasonal[npcId])
 		end
+		
+		-- Report
+		if profile[S.instance] then
+			self:Pour(self:InstanceText(nil, override))
+		end
+		
+		self:Finalize()
 	end
 end
 
@@ -233,26 +213,25 @@ end
 	-----------------------
 
 function KIT:LFG_PROPOSAL_SUCCEEDED(event)
-	self:ScheduleTimer(function()
-		if self:GetInstanceTime() == 0 then
+	C_Timer.After(20, function()
+		if char.timeInstance == 0 then
 			self:StartData()
 			
 			if S.IsStopwatch() then
 				S.StopwatchStart()
 			end
 		end
-	end, 30)
+	end)
 end
 
 	---------------------
 	--- Secondary End ---
 	---------------------
 
--- only fires after completing a random dungeon
--- delay it a bit, so it doesn't react on the same time as boss death
-function KIT:LFG_COMPLETION_REWARD(event)
-	self:ScheduleTimer(function()
-		if self:GetInstanceTime() > 0 then
+function KIT:SecondaryCompletion()
+	-- delay it a bit, so it doesn't react on the same time as boss death
+	C_Timer.After(1, function()
+		if char.timeInstance > 0 then
 			if profile.RecordInstance then
 				self:Record()
 			end
@@ -263,26 +242,15 @@ function KIT:LFG_COMPLETION_REWARD(event)
 			
 			self:Finalize()
 		end
-	end, 1)
+	end)
 end
 
-	-------------------
-	--- Special End ---
-	-------------------
+-- only fires after completing a random dungeon
+function KIT:LFG_COMPLETION_REWARD(event)
+	self:SecondaryCompletion()
+end
 
-function KIT:UNIT_SPELLCAST_SUCCEEDED(event, unit, name, _, _, spellID)
-	if S.SpellIDs[spellID] and self:GetInstanceTime() > 0 then
-		-- [Deathwing] "Fall of Deathwing" or "Dragon Soul"
-		local override = (GetLFGModeType() == "raid") and S.SpellIDs[spellID]
-		
-		if profile.RecordInstance then
-			self:Record(override)
-		end
-		
-		if profile[S.instance] then
-			self:Pour(self:InstanceText(nil, override))
-		end
-		
-		self:Finalize()
-	end
+-- scenarios and instances (since WoD)
+function KIT:SCENARIO_COMPLETED(event)
+	self:SecondaryCompletion()
 end
