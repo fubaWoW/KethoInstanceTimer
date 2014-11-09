@@ -168,7 +168,7 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	
 	if subevent ~= "UNIT_DIED" then return end
 	
-	local unitType, _, _, _, _, npcId = strsplit(":", destGUID)
+	local unitType, _, _, _, _, npcId = strsplit("-", destGUID)
 	npcId = tonumber(npcId)
 	local id = S.RaidBossIDs[npcId] or S.Seasonal[npcId]
 	

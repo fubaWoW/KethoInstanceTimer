@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 2.0 [2014.11.08]			---
+--- Version: 2.1 [2014.11.10]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
