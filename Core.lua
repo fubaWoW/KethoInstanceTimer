@@ -135,7 +135,8 @@ end
 function KIT:PLAYER_ENTERING_WORLD(event)
 	S.instance = select(2, IsInInstance())
 	
-	if S.pve[S.instance] then
+	-- garrison instance type == "party" 
+	if S.pve[S.instance] and not S.garrison[select(8, GetInstanceInfo())] then
 		-- entered instance
 		if char.timeInstance == 0 then
 			self:StartData()

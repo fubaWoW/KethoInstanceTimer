@@ -1,5 +1,5 @@
 ## Interface: 60000
-## Version: 2.1
+## Version: 2.2
 ## Title: Ketho InstanceTimer
 ## Notes: Ketho's Instance Timer
 ## Author: Ketho @ EU-Boulderfist

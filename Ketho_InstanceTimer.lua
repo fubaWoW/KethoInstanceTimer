@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 2.1 [2014.11.10]			---
+--- Version: 2.2 [2014.12.22]			---
 -------------------------------------------
 --- Curse			http://www.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
@@ -63,6 +63,17 @@ S.pvp = {
 	arena = true,
 }
 
+S.garrison = {
+	[1152] = true,
+	[1330] = true,
+	[1153] = true,
+	[1154] = true,
+	[1158] = true,
+	[1331] = true,
+	[1159] = true,
+	[1160] = true,
+}
+
 S.difficulty = {
 	[1] = PLAYER_DIFFICULTY1, -- "Normal",
 	[2] = PLAYER_DIFFICULTY2, -- "Heroic"
@@ -79,6 +90,9 @@ S.difficulty = {
 	[15] = PLAYER_DIFFICULTY2.." "..FLEX_RAID, -- Heroic Flexible Raid
 	[16] = PLAYER_DIFFICULTY6, --"Mythic"
 	[17] = PLAYER_DIFFICULTY4.." "..PLAYER_DIFFICULTY3, -- Flexible Raid Finder
+	[18] = "Event",
+	[18] = "Event",
+	[20] = "Event "..GUILD_CHALLENGE_TYPE4,
 }
 
 	----------------
