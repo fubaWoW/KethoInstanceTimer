@@ -32,10 +32,9 @@ local REALM = FRIENDS_LIST_REALM:gsub(":", "")
 S.defaults = {
 	profile = {
 		party = true,
+		raid = true,
 		scenario = true,
 		InstanceTimerMsg = L.INSTANCE_TIMER_MSG,
-		
-		RecordInstance = true,
 		
 		LegacyTime = true,
 		TimeMaxCount = 2,
@@ -83,7 +82,7 @@ S.options = {
 					type = "input", order = 2,
 					width = "full",
 					name = " ",
-					usage = "\n|cffA8A8FFINSTANCE|r, |cff71D5FFTIME|r\n|cffF6ADC6START|r, |cffADFF2FEND|r\n|cff0070DDDATE|r, |cff0070DDDATE2|r",
+					usage = "\n|cffA8A8FFINSTANCE|r, |cff71D5FFTIME|r\n|cffF6ADC6START|r, |cffADFF2FEND|r\n|cff0070DDDATE|r, |cff0070DDDATE2|r\n|cffFFFF00DIFFICULTY|r",
 					set = function(i, v) profile.InstanceTimerMsg = v
 						if strtrim(v) == "" then
 							profile.InstanceTimerMsg = S.defaults.profile.InstanceTimerMsg
@@ -116,17 +115,11 @@ S.options = {
 					width = "full", descStyle = "",
 					name = "|TInterface\\Icons\\inv_misc_spyglass_03:16:16:1:0"..crop.."|t  "..BINDING_NAME_SCREENSHOT,
 				},
-				RecordInstance = {
-					type = "toggle", order = 7,
-					width = "full", descStyle = "",
-					name = "|TInterface\\Icons\\Trade_Engineering:16:16:1:0"..crop.."|t  "..L.RECORD_DATA,
-				},
 				Data = {
 					type = "execute", order = 8,
 					descStyle = "",
 					name = "|TInterface\\Icons\\INV_Misc_Note_01:16:16:1:-1"..crop.."|t  |cffFFFFFF"..L.DATA.."|r",
 					func = "DataFrame",
-					hidden = function() return not profile.RecordInstance end,
 				},
 			},
 		},
@@ -346,11 +339,7 @@ function KIT:DataFrame()
 		KethoInstanceTimerData:Show()
 	end
 	
-	if ACD.OpenFrames.KethoInstanceTimer then
-		-- the ACD window's Strata is "FULLSCREEN_DIALOG", and changing FrameLevels seems troublesome
-		KethoInstanceTimerData:SetFrameStrata("TOOLTIP")
-	end
-	
+	ACD:Close(NAME) -- close the options panel, its in the way now
 	KethoInstanceTimerDataEditBox:SetText(self:GetData())
 	GameTooltip:Hide() -- most likely the popup frame will prevent the GameTooltip's OnLeave script from firing
 end
@@ -381,13 +370,7 @@ do
 			local instanceColor = S.pve[l.instanceType or "party"]
 			
 			if profile.Difficulty and l.difficulty then
-				-- MoP (5.0.4) / KIT v1.0 changed to new difficultyIndex
-				local diff
-				if l.instanceType == "seasonal" then
-					diff = "Seasonal"
-				else
-					diff = S.difficulty[l.difficulty] or NONE -- most pre-mop data is wrong now ..
-				end
+				local diff = S.difficulty[l.difficulty] or UNKNOWN -- most pre-mop data is wrong now ..
 				
 				tinsert(t[4], format("%s |cffF6ADC6[%s]|r-|cffADFF2F[%s]|r |cff%s[%s]|r |cffFFFF00%s|r - %s"..partyformat,
 					l.date, l.start, l["end"], instanceColor, l.zone, diff, self:Time(l.time), strjoin(", ", unpack(t[3]))))

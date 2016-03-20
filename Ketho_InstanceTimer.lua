@@ -2,10 +2,10 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 2.2 [2014.12.22]			---
+--- Version: 2.5 [2016.03.20]			---
 -------------------------------------------
---- Curse			http://www.curse.com/addons/wow/kinstancetimer
---- WoWInterface	http://www.wowinterface.com/downloads/info19910-kInstanceTimer.html
+--- Curse			http://mods.curse.com/addons/wow/kinstancetimer
+--- WoWInterface	http://www.wowinterface.com/downloads/info19910-KethoInstanceTimer.html
 
 local NAME, S = ...
 S.VERSION = GetAddOnMetadata(NAME, "Version")
@@ -63,123 +63,60 @@ S.pvp = {
 	arena = true,
 }
 
+S.npc = {
+	Creature = true,
+	Vehicle = true,
+}
+
+-- garrison is classified as a "party" instancetype, which is a false positive for us
+-- http://wow.gamepedia.com/InstanceMapID#Garrisons
 S.garrison = {
-	[1152] = true,
-	[1330] = true,
-	[1153] = true,
-	[1154] = true,
-	[1158] = true,
-	[1331] = true,
-	[1159] = true,
-	[1160] = true,
+	[1152] = true, -- FW Horde Garrison Level 1
+	[1330] = true, -- FW Horde Garrison Level 2
+	[1153] = true, -- FW Horde Garrison Level 3
+	[1154] = true, -- FW Horde Garrison Level 4
+	[1158] = true, -- SMV Alliance Garrison Level 1
+	[1331] = true, -- SMV Alliance Garrison Level 2
+	[1159] = true, -- SMV Alliance Garrison Level 3
+	[1160] = true, -- SMV Alliance Garrison Level 4
 }
 
-S.difficulty = {
-	[1] = PLAYER_DIFFICULTY1, -- "Normal",
-	[2] = PLAYER_DIFFICULTY2, -- "Heroic"
-	[3] = RAID_DIFFICULTY1, -- "10 Player"
-	[4] = RAID_DIFFICULTY2, -- "25 Player"
-	[5] = RAID_DIFFICULTY3, -- "10 Player (Heroic)"
-	[6] = RAID_DIFFICULTY4, -- "25 Player (Heroic)"
-	[7] = PLAYER_DIFFICULTY3, -- "Raid Finder"
-	[8] = CHALLENGE_MODE, -- "Challenge Mode"
-	[9] = RAID_DIFFICULTY_40PLAYER, -- "40 Player"
-	[11] = HEROIC_SCENARIO, -- "Heroic Scenario"
-	[12] = GUILD_CHALLENGE_TYPE4, -- "Scenario"
-	[14] = FLEX_RAID, -- ""Flexible Raid""
-	[15] = PLAYER_DIFFICULTY2.." "..FLEX_RAID, -- Heroic Flexible Raid
-	[16] = PLAYER_DIFFICULTY6, --"Mythic"
-	[17] = PLAYER_DIFFICULTY4.." "..PLAYER_DIFFICULTY3, -- Flexible Raid Finder
-	[18] = "Event",
-	[18] = "Event",
-	[20] = "Event "..GUILD_CHALLENGE_TYPE4,
+-- http://wow.gamepedia.com/DifficultyID
+-- GetDifficultyInfo(difficultyID)
+S.difficulty = {}
+
+for i = 1, 30 do
+	S.difficulty[i] = GetDifficultyInfo(i)
+end
+
+local normalRaid = {
+	[3] = true, -- "10 Player" raid
+	[4] = true, -- "25 Player" raid
+	[5] = true, -- "10 Player (Heroic)" raid
+	[6] = true, -- "25 Player (Heroic)" raid
+	[14] = true, -- "Normal" raid
+	[15] = true, -- "Heroic" raid
+	[16] = true, -- "Mythic" raid
 }
 
-	----------------
-	--- Boss IDs ---
-	----------------
+function S.IsNormalRaid()
+	return normalRaid[select(3, GetInstanceInfo())]
+end
 
--- use SCENARIO_COMPLETED since WoD
---[[
-S.BossIDs = {
-	-- [1-60] Classic
-	[1853] = true, -- Darkmaster Gandling; Scholomance (deprecated?)
-	[2748] = true, -- Archaedas; Uldaman
-	[3977] = true, -- High Inquisitor Whitemane; Scarlet Monastery (dies after "Commander Durand"; Untargetable "corpse")
-	[3654] = true, -- Mutanus the Devourer; Wailing Caverns
-	[4275] = true, -- Archmage Arugal; Shadowfang Keep (Normal/Heroic)
-	[4421] = true, -- Charlga Razorflank; Razorfen Kraul
-	[4829] = true, -- Aku'mai; Blackfathom Deeps
-	[5709] = true, -- Shade of Eranikus; Sunken Temple
-	[7267] = true, -- Chief Ukorz Sandscalp; Zul'Farrak
-	[7358] = true, -- Amnennar the Coldbringer; Razorfen Downs
-	[7800] = true, -- Mekgineer Thermaplugg; Gnomeregan
-	[9018] = L["Blackrock Depths - Detention Block"], -- High Interrogator Gerstahn
-	[9019] = L["Blackrock Depths - Upper City"], -- Emperor Dagran Thaurissan
-	[9568] = L["Lower Blackrock Spire"], -- Overlord Wyrmthalak
-	[10363] = L["Upper Blackrock Spire"], -- General Drakkisath
-	[10813] = L["Stratholme - Main Gate"], -- Balnazzar
-	[11486] = L["Dire Maul - Capital Gardens"], -- Prince Tortheldrin
-	[11492] = true, -- Alzzin the Wildshaper; Dire Maul: Warpwood Quarter
-	[11501] = L["Dire Maul - Gordok Commons"], -- King Gordok
-	[11520] = true, -- Taragaman the Hungerer; Ragefire Chasm
-	[12201] = L["Maraudon - Earth Song Falls"], -- Princess Theradras
-	[12236] = L["Maraudon - The Wicked Grotto"], -- Lord Vyletongue
-	[12258] = L["Maraudon - Foulspore Cavern"], -- Razorlash
-	[45412] = L["Stratholme - Service Entrance"], -- Lord Aurius Rivendare
-	[46964] = true, -- Lord Godfrey; Shadowfang Keep
-	[46254] = true, -- Hogger; Stormwind Stockade
-	[47739] = true, -- "Captain" Cookie; Deadmines (Normal)
-	[49541] = true, -- Vanessa VanCleef; Deadmines (Heroic)
-	[59080] = true, -- Darkmaster Gandling; Scholomance (MoP; Heroic)
-	[59150] = true, -- Flameweaver Koegler; Scarlet Halls
-	
-	-- [60-70] The Burning Crusade
-	[16808] = true, -- Warchief Kargath Bladefist; Hellfire Citadel: The Shattered Halls
-	[17377] = true, -- Keli'dan the Breaker; Hellfire Citadel: The Blood Furnace
---	[17536] = true, -- Nazan; Hellfire Citadel: Hellfire Ramparts
-	[17307] = true, -- Nazan/Vazruden the Herald; Hellfire Citadel: Hellfire Ramparts
-	[17798] = true, -- Warlord Kalithresh; Coilfang Reservoir: The Steamvault
-	[17881] = true, -- Aeonus; Caverns of Time: The Black Morass
-	[17882] = true, -- The Black Stalker; Coilfang Reservoir: The Underbog
-	[17942] = true, -- Quagmirran; Coilfang Reservoir: The Slave Pens
-	[17977] = true, -- Warp Splinter; Tempest Keep: The Botanica
-	[18344] = true, -- Nexus-Prince Shaffar; Auchindoun: Mana-Tombs
-	[18373] = true, -- Exarch Maladaar; Auchindoun: Auchenai Crypts
-	[18473] = true, -- Talon King Ikiss; Auchindoun: Sethekk Halls
-	[18708] = true, -- Murmur; Auchindoun: Shadow Labyrinth
-	[18096] = true, -- Epoch Hunter; Caverns of Time: Old Hillsbrad Foothills
-	[19220] = true, -- Pathaleon the Calculator; Tempest Keep: The Mechanar
-	[20912] = true, -- Harbinger Skyriss; Tempest Keep: The Arcatraz
-	
-	-- [70-80] Wrath of the Lich King
-	[26632] = true, -- The Prophet Tharon'ja; Drak'Tharon Keep (name has an trailing space at the end when transformed, GUID remains unchanged)
-	[26723] = true, -- Keristrasza; The Nexus: The Nexus
-	[26861] = true, -- King Ymiron; Utgarde Keep: Utgarde Pinnacle
-	[27656] = true, -- Ley-Guardian Eregos; The Nexus: The Oculus
-	[27978] = true, -- Sjonnir The Ironshaper; Ulduar: Halls of Stone
-	[28923] = true, -- Loken; Ulduar: Halls of Lightning
-	[29120] = true, -- Anub'arak; Azjol-Nerub: Azjol-Nerub
-	[29306] = true, -- Gal'darah; Gundrak
-	[29311] = true, -- Herald Volazj; Azjol-Nerub: Ahn'kahet: The Old Kingdom
-	[31134] = true, -- Cyanigosa; The Violet Hold
-	[36502] = true, -- Devourer of Souls; Icecrown Citadel: The Forge of Souls
-	[36658] = true, -- Scourgelord Tyrannus; Icecrown Citadel: Pit of Saron
---	[23954] = true, -- Ingvar the Plunderer; Utgarde Keep: Utgarde Pinnacle (dies 2x)
---	[26533] = true, -- Mal'Ganis; Caverns of Time: The Culling of Stratholme (no death)
---	[35451] = true, -- The Black Knight; Crusaders' Coliseum: Trial of the Champion (dies 3x)
---	[36954] = true, -- The Lich King; Icecrown Citadel: Halls of Reflection (no death)
-}
-]]
+	--------------
+	--- Bosses ---
+	--------------
 
-S.RaidBossIDs = { -- untested
-	-- [1-60] Classic
+-- all normal dungeons are a scenario now
+-- there is no need to check for those specific boss deaths, since the fallback events will fire
+S.BossIDs = { -- untested
+	-- [60] Classic
 	[11502] = true, -- Ragnaros; Molten Core
 	[11583] = true, -- Nefarian; Blackwing Lair
 	[15339] = true, -- Ossirian the Unscarred; Ruins of Ahn'Qiraj
 	[15727] = true, -- C'Thun; Temple of Ahn'Qiraj
 	
-	-- [60-70] The Burning Crusade
+	-- [70] The Burning Crusade
 	[15690] = true, -- Prince Malchezaar; Karazhan
 	[17257] = true, -- Magtheridon; Hellfire Citadel: Magtheridon's Lair
 	[17968] = true, -- Archimonde; Caverns of Time: Hyjal Summit
@@ -189,7 +126,7 @@ S.RaidBossIDs = { -- untested
 	[22917] = true, -- Illidan Stormrage; Black Temple
 	[25315] = true, -- Kil'jaeden; Sunwell Plateau
 	
-	-- [70-80] Wrath of the Lich King
+	-- [80] Wrath of the Lich King
 	[10184] = true, -- Onyxia; Onyxia's Lair
 	[15990] = true, -- Kel'Thuzad; Naxxramas
 	[28859] = true, -- Malygos; The Nexus: The Eye of Eternity
@@ -200,28 +137,149 @@ S.RaidBossIDs = { -- untested
 	[38433] = true, -- Toravon the Ice Watcher; Vault of Archavon
 	[39863] = true, -- Halion; Wyrmrest Temple: The Ruby Sanctum
 	
-	-- [80-85] Cataclysm
+	-- [85] Cataclysm
 	[41376] = true, -- Nefarian; Blackwing Descent
 	[43324] = true, -- Cho'gall; The Bastion of Twilight
 	[46753] = true, -- Al'Akir; Throne of the Four Winds
 	[52363] = true, -- Occu'thar; Baradin Hold
 	[52409] = true, -- Ragnaros; Firelands
-	[55689] = L["The Siege of Wyrmrest Temple"], -- Hagara the Stormbinder; Dragon Soul (To Do: only when in Raid Finder)
-	[56173] = L["Fall of Deathwing"], -- Deathwing; Dragon Soul (no death)
+	[56173] = true, -- Deathwing (no death); Dragon Soul
 	
-	-- [85-90] Mists of Pandaria (Untested)
-	[60400] = true, -- Jan-xi (Will of the Emperor); Mogu'shan Vaults
+	-- [90] Mists of Pandaria
+	[60400] = true, -- Jan-xi; Mogu'shan Vaults
 	[60999] = true, -- Sha of Fear; Terrace of Endless Spring
 	[62837] = true, -- Grand Empress Shek'zeer; Heart of Fear
+	
+	-- [100] Warlords of Draenor
+	[77428] = true, -- Imperator Mar'gok; Highmaul
+	[77325] = true, -- Blackhand; Blackrock Foundry
+	[91331] = true, -- Archimonde; Hellfire Citadel
 }
 
-S.Seasonal = {
-	[23682] = L["The Headless Horseman"], -- "Headless Horseman", Hallow's End
-	[23872] = L["Coren Direbrew"], -- "Coren Direbrew", Brewfest
-	[25740] = L["The Frost Lord Ahune"], -- "Ahune", Midsummer Fire Festival; transforms into "Frozen Core"
-	[25865] = L["The Frost Lord Ahune"], -- "Frozen Core"; Midsummer Fire Festival
-	[36296] = L["The Crown Chemical Co."], -- "Apothecary Hummel", Love is in the Air
+-- /run for i = 1, GetNumRFDungeons() do print(GetRFDungeonInfo(i)) end
+-- GetLFGDungeonInfo(i)
+S.DungeonName = {}
+
+-- remap boss id to localized dungeon names
+function S.RemapDungeon() -- wait for init S.DungeonName
+	S.DungeonIDs = {
+		-- Seasonal
+		[23682] = S.DungeonName[285], -- "The Headless Horseman"; "Headless Horseman"; Hallow's End
+		[25740] = S.DungeonName[286], -- "The Frost Lord Ahune"; "Ahune"; Midsummer Fire Festival; transforms into "Frozen Core"
+		[25865] = S.DungeonName[286], -- "The Frost Lord Ahune"; "Frozen Core"; Midsummer Fire Festival
+		[23872] = S.DungeonName[287], -- "Coren Direbrew", Brewfest
+		[36296] = S.DungeonName[288], -- "The Crown Chemical Co."; "Apothecary Hummel"; Love is in the Air
+		[36565] = S.DungeonName[288], -- "The Crown Chemical Co."; "Apothecary Baxter"; Love is in the Air
+		[36272] = S.DungeonName[288], -- "The Crown Chemical Co."; "Apothecary Frye"; Love is in the Air
+		
+		-- Multiple Parts Dungeon
+		[12258] = S.DungeonName[26], -- "Maraudon - Foulspore Cavern"; Razorlash
+		[12236] = S.DungeonName[272], -- "Maraudon - The Wicked Grotto"; Lord Vyletongue
+		[12201] = S.DungeonName[273], -- "Maraudon - Earth Song Falls"; Princess Theradras
+		
+		[9018] = S.DungeonName[30], -- "Blackrock Depths - Detention Block"; High Interrogator Gerstahn
+		[9019] = S.DungeonName[276], -- "Blackrock Depths - Upper City"; Emperor Dagran Thaurissan
+		
+		[11486] = S.DungeonName[36], -- "Dire Maul - Capital Gardens"; Prince Tortheldrin
+		[11492] = S.DungeonName[34], -- "Dire Maul - Warpwood Quarter"; Alzzin the Wildshaper
+		[11501] = S.DungeonName[38], -- "Dire Maul - Gordok Commons"; King Gordok
+		
+		[10813] = S.DungeonName[40], -- "Stratholme - Main Gate"; Balnazzar
+		[45412] = S.DungeonName[274], -- "Stratholme - Service Entrance"; Lord Aurius Rivendare
+		
+		[9568] = S.DungeonName[32], -- "Lower Blackrock Spire"; Overlord Wyrmthalak
+		[10363] = S.DungeonName[330], -- "Upper Blackrock Spire"; General Drakkisath
+		[77120] = S.DungeonName[860], -- "Upper Blackrock Spire" (WoD); Warlord Zaela
+		
+		-- [85] Cataclysm
+		-- Dragon Soul
+		[55689] = S.DungeonName[416], -- "The Siege of Wyrmrest Temple"; Hagara the Stormbinder
+		[56173] = S.DungeonName[417], -- "Fall of Deathwing"; Deathwing (no death)
+		
+		-- [90] Mists of Pandaria
+		-- ...
+		
+		-- [100] Warlords of Draenor
+		-- Highmaul
+		[78491] = S.DungeonName[849], -- "Walled City"; Brackenspore
+		[79015] = S.DungeonName[850], -- "Arcane Sanctum"; Ko'ragh
+		[77428] = S.DungeonName[851], -- "Imperator's Rise"; Imperator Mar'gok
+		
+		-- Blackrock Foundry
+		[76806] = S.DungeonName[847], -- "Slagworks"; "Heart of the Mountain" (Blast Furnace)
+		[77692] = S.DungeonName[846], -- "The Black Forge"; "Kromog"
+		[77557] = S.DungeonName[848], -- "Iron Assembly"; "Admiral Gar'an"
+		[77231] = S.DungeonName[848], -- "Iron Assembly"; "Enforcer Sorka"
+		[77477] = S.DungeonName[848], -- "Iron Assembly"; "Marak the Blooded"
+		[77325] = S.DungeonName[823], -- "Blackhand's Crucible"; "Blackhand"
+		
+		-- Hellfire Citadel
+		[90435] = S.DungeonName[982], -- "Hellbreach"; "Kormrok"
+		[91809] = S.DungeonName[983], -- "Halls of Blood"; "Gorefiend"
+		[93439] = S.DungeonName[984], -- "Bastion of Shadows"; "Tyrant Velhari"
+		[91349] = S.DungeonName[985], -- "Destructor's Rise"; "Mannoroth"
+		[91331] = S.DungeonName[986], -- "The Black Gate"; "Archimonde"
+	}
+end
+
+S.SpecialDungeon = {
+	[285] = true, -- "The Headless Horseman"; Hallow's End
+	[286] = true, -- "The Frost Lord Ahune"; Midsummer Fire Festival
+	[287] = true, -- "Coren Direbrew", Brewfest
+	[288] = true, -- "The Crown Chemical Co."; Love is in the Air
+	
+	[26] = true, -- "Maraudon - Foulspore Cavern"
+	[272] = true, -- "Maraudon - The Wicked Grotto"
+	[273] = true, -- "Maraudon - Earth Song Falls"
+	
+	[30] = true, -- "Blackrock Depths - Detention Block"
+	[276] = true, -- "Blackrock Depths - Upper City"
+	
+	[34] = true, -- "Dire Maul - Warpwood Quarter"
+	[36] = true, -- "Dire Maul - Capital Gardens"
+	[38] = true, -- "Dire Maul - Gordok Commons"
+	
+	[40] = true, -- "Stratholme - Main Gate"
+	[274] = true, -- "Stratholme - Service Entrance"
+	
+	[32] = true, -- "Lower Blackrock Spire"
+	[330] = true, -- "Upper Blackrock Spire"
+	[860] = true, -- "Upper Blackrock Spire" (WoD)
 }
+
+S.Multiple = {
+	[36296] = "The Crown Chemical Co.", -- "Apothecary Hummel"
+	[36565] = "The Crown Chemical Co.", -- "Apothecary Baxter"
+	[36272] = "The Crown Chemical Co.", -- "Apothecary Frye"
+	[77557] = "Iron Assembly", -- "Admiral Gar'an"
+	[77231] = "Iron Assembly", -- "Enforcer Sorka"
+	[77477] = "Iron Assembly", -- "Marak the Blooded"
+}
+
+S.MultipleCache = {} -- second table for tracking npc deaths
+
+local multipleHash = {} -- hash table
+for k, v in pairs(S.Multiple) do
+	multipleHash[v] = multipleHash[v] or {}
+	multipleHash[v][k] = true
+end
+
+function S.CheckMultiple(v)
+	local isMultiple = true
+	
+	if S.Multiple[v] then
+		S.MultipleCache[v] = true
+		
+		for k in pairs(multipleHash[S.Multiple[v]]) do
+			if not S.MultipleCache[k] then
+				isMultiple = false
+				break
+			end
+		end
+	end
+	
+	return isMultiple
+end
 
 	---------------------
 	--- Instance Time ---
@@ -360,7 +418,13 @@ end
 
 -- for when we're not sure whether the player is in an instance
 function S.IsStopwatch()
-	return (profile.Stopwatch and S.instance ~= "none")
+	return (profile.Stopwatch and S.instance ~= "none" and not S.IsGarrison())
+end
+
+-- garrison instance type == "party" 
+function S.IsGarrison()
+	local mapId = select(8, GetInstanceInfo())
+	return S.garrison[mapId]
 end
 
 	--------------------
@@ -400,6 +464,7 @@ function KIT:Finalize()
 	
 	-- reset variables
 	self:ResetTime()
+	wipe(S.MultipleCache)
 end
 
 	--------------
@@ -407,7 +472,7 @@ end
 	--------------
 
 -- Save Instance Timer data
-function KIT:Record(override, seasonal)
+function KIT:Record(name)
 	-- tried recycling "party" and that was kinda dumb of me
 	local party = {}
 	
@@ -427,8 +492,8 @@ function KIT:Record(override, seasonal)
 		date = char.startDate,
 		start = char.startTime,
 		["end"] = date("%H:%M"),
-		zone = override or self:Zone(),
-		instanceType = seasonal and "seasonal" or S.instance,
+		zone = name or self:Zone(),
+		instanceType = S.instance,
 		difficulty = select(3, GetInstanceInfo()),
 		time = time() - char.timeInstance,
 		party = party,
@@ -463,7 +528,7 @@ end
 
 local exampleTime = random(3600)
 
-function KIT:InstanceText(isPreview, override)
+function KIT:InstanceText(isPreview, name)
 	wipe(args)
 	
 	if isPreview then
@@ -473,13 +538,15 @@ function KIT:InstanceText(isPreview, override)
 		args["end"] = "|cffADFF2F"..date("%H:%M", time() + exampleTime).."|r" -- can't use keywords as a table key o_O
 		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
 		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
+		args.difficulty = "|cffFFFF00"..(select(4, GetInstanceInfo()) or UNKNOWN).."|r"
 	else
-		args.instance = override or self:Zone()
+		args.instance = name or self:Zone()
 		args.time = self:Time(char.timeInstance > 0 and time() - char.timeInstance or 0)
 		args.start = char.startTime
 		args["end"] = date("%H:%M")
 		args.date = date("%Y.%m.%d")
 		args.date2 = date("%m/%d/%y")
+		args.difficulty = select(4, GetInstanceInfo()) or UNKNOWN
 	end
 	return ReplaceArgs(profile.InstanceTimerMsg, args)
 end

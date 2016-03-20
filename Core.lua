@@ -34,6 +34,22 @@ function KIT:OnInitialize()
 	ACD:AddToBlizOptions(NAME, S.NAME)
 	ACD:SetDefaultSize(NAME, 550, 430)
 	
+	---------------------
+	--- Dungeon Names ---
+	---------------------
+	
+	-- grab the localized names from the dungeon finder
+	for i = 1, GetNumRFDungeons() do
+		local id, name = GetRFDungeonInfo(i)
+		S.DungeonName[id] = name
+	end
+	
+	for k, v in pairs(S.SpecialDungeon) do
+		S.DungeonName[k] = GetLFGDungeonInfo(k)
+	end
+	
+	S.RemapDungeon()
+	
 	----------------------
 	--- Slash Commands ---
 	----------------------
@@ -135,17 +151,19 @@ end
 function KIT:PLAYER_ENTERING_WORLD(event)
 	S.instance = select(2, IsInInstance())
 	
-	-- garrison instance type == "party" 
-	if S.pve[S.instance] and not S.garrison[select(8, GetInstanceInfo())] then
+	if S.pve[S.instance] and not S.IsGarrison() then
 		-- entered instance
 		if char.timeInstance == 0 then
 			self:StartData()
 		end
 		
-		if profile.Stopwatch then
+		if S.IsStopwatch() then
 			S.StopwatchStart()
 		end
-	elseif S.instance == "none" and not IsInGroup() then
+	-- player is outside of the instance and player is alone or not in an (instance group == premade)
+	--- still have no idea if the "home" group can change into an "instance" group on entering and vice versa on leaving
+	--- hopefully it does, otherwise this is bad..
+	elseif (S.instance == "none" or S.IsGarrison()) and not IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
 		-- left instance
 		self:ResetTime(true)
 		
@@ -159,11 +177,6 @@ end
 	--- End ---
 	-----------
 
-local npc = {
-	Creature = true,
-	Vehicle = true,
-}
-
 function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	local timestamp, subevent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = ...
 	
@@ -171,20 +184,25 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
 	
 	local unitType, _, _, _, _, npcId = strsplit("-", destGUID)
 	npcId = tonumber(npcId)
-	local id = S.RaidBossIDs[npcId] or S.Seasonal[npcId]
 	
-	if npc[unitType] and id and char.timeInstance > 0 then
-		-- exceptions/overrides
-		local override = (type(id) == "string") and id
+	-- dont report raid finder in normal/heroic/mythic raids
+	-- note that we still want to report in dungeons like maraudon and seasonal
+	local name = not S.IsNormalRaid() and S.DungeonIDs[npcId] or S.BossIDs[npcId]
+	
+	if S.npc[unitType] and name and char.timeInstance > 0 then
+		
+		-- boss fights with multiple npcs
+		if S.Multiple[npcId] and not S.CheckMultiple(npcId) then return end
+		
+		-- if its raid finder/seasonal, get specific name, otherwise fall back to zone
+		local name = (type(name) == "string") and name
 		
 		-- Record
-		if profile.RecordInstance then
-			self:Record(override, S.Seasonal[npcId])
-		end
+		self:Record(name)
 		
 		-- Report
 		if profile[S.instance] then
-			self:Pour(self:InstanceText(nil, override))
+			self:Pour(self:InstanceText(nil, name))
 		end
 		
 		self:Finalize()
@@ -233,9 +251,7 @@ function KIT:SecondaryCompletion()
 	-- delay it a bit, so it doesn't react on the same time as boss death
 	C_Timer.After(1, function()
 		if char.timeInstance > 0 then
-			if profile.RecordInstance then
-				self:Record()
-			end
+			self:Record()
 			
 			if profile[S.instance] then
 				self:Pour(self:InstanceText())
