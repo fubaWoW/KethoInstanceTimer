@@ -22,8 +22,8 @@ local HOURS_ABBR2 = gsub(HOURS_ABBR, "%%d ", "")
 local DAYS_ABBR2 = gsub(DAYS_ABBR, "%%d ", "")
 
 local arrow = "|cffF6ADC6->|r"
-local crop = ":64:64:4:60:4:60"
 local REALM = FRIENDS_LIST_REALM:gsub(":", "")
+S.crop = ":64:64:4:60:4:60"
 
 	---------------
 	--- Options ---
@@ -64,12 +64,12 @@ S.options = {
 						party = {
 							type = "toggle", order = 1,
 							width = "full", descStyle = "",
-							name = " |cffA8A8FF"..INSTANCE.."|r",
+							name = " |cffA8A8FF"..DUNGEONS.."|r",
 						},
 						raid = {
 							type = "toggle", order = 2,
 							width = "full", descStyle = "",
-							name = " |cffFF7F00"..RAID.."|r",
+							name = " |cffFF7F00"..RAIDS.."|r",
 						},
 						scenario = {
 							type = "toggle", order = 3,
@@ -98,7 +98,7 @@ S.options = {
 				Stopwatch = {
 					type = "toggle", order = 5,
 					width = "full", descStyle = "",
-					name = "|TInterface\\Icons\\Spell_Holy_BorrowedTime:16:16:1:0"..crop.."|t  "..STOPWATCH_TITLE.."|r",
+					name = "|TInterface\\Icons\\Spell_Holy_BorrowedTime:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r",
 					set = function(i, v)
 						profile.Stopwatch = v
 						if v then
@@ -113,19 +113,19 @@ S.options = {
 				Screenshot = {
 					type = "toggle", order = 6,
 					width = "full", descStyle = "",
-					name = "|TInterface\\Icons\\inv_misc_spyglass_03:16:16:1:0"..crop.."|t  "..BINDING_NAME_SCREENSHOT,
+					name = "|TInterface\\Icons\\inv_misc_spyglass_03:16:16:1:0"..S.crop.."|t  "..BINDING_NAME_SCREENSHOT,
 				},
 				Data = {
 					type = "execute", order = 8,
 					descStyle = "",
-					name = "|TInterface\\Icons\\INV_Misc_Note_01:16:16:1:-1"..crop.."|t  |cffFFFFFF"..L.DATA.."|r",
+					name = "|TInterface\\Icons\\INV_Misc_Note_01:16:16:1:-1"..S.crop.."|t  |cffFFFFFF"..HISTORY.."|r",
 					func = "DataFrame",
 				},
 			},
 		},
 		advanced = {
-			type = "group", order = 2,
-			name = ADVANCED_LABEL,
+			type = "group", order = 3,
+			name = "|TInterface\\Icons\\Trade_Engineering:16:16:-2:-1"..S.crop.."|t "..ADVANCED_LABEL,
 			handler = KIT,
 			get = "GetValue",
 			set = "SetValue",

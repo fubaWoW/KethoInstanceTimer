@@ -1,5 +1,5 @@
 ## Interface: 60200
-## Version: 2.5
+## Version: 2.6
 ## Title: Ketho InstanceTimer
 ## Notes: Ketho's Instance Timer
 ## Author: Ketho @ EU-Boulderfist

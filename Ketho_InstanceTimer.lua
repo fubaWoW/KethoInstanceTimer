@@ -2,7 +2,7 @@
 --- Author: Ketho (EU-Boulderfist)		---
 --- License: Public Domain				---
 --- Created: 2011.05.27					---
---- Version: 2.5 [2016.03.20]			---
+--- Version: 2.6 [2016.03.24]			---
 -------------------------------------------
 --- Curse			http://mods.curse.com/addons/wow/kinstancetimer
 --- WoWInterface	http://www.wowinterface.com/downloads/info19910-KethoInstanceTimer.html
@@ -265,20 +265,17 @@ for k, v in pairs(S.Multiple) do
 end
 
 function S.CheckMultiple(v)
-	local isMultiple = true
-	
 	if S.Multiple[v] then
 		S.MultipleCache[v] = true
 		
 		for k in pairs(multipleHash[S.Multiple[v]]) do
 			if not S.MultipleCache[k] then
-				isMultiple = false
-				break
+				return
 			end
 		end
 	end
 	
-	return isMultiple
+	return true
 end
 
 	---------------------

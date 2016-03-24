@@ -25,10 +25,11 @@ function KIT:OnInitialize()
 	self.db.global.build = S.BUILD
 	
 	options.args.libsink = self:GetSinkAce3OptionsDataTable()
-	options.args.libsink.order = 3
+	options.args.libsink.order = 2
 	
 	options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	options.args.profiles.order = 4
+	options.args.profiles.name = "|TInterface\\Icons\\INV_Misc_Note_01:16:16:-2:-1"..S.crop.."|t "..options.args.profiles.name
 	
 	ACR:RegisterOptionsTable(NAME, S.options)
 	ACD:AddToBlizOptions(NAME, S.NAME)

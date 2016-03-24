@@ -2,7 +2,6 @@ local _, S = ...
 
 local L = {
 	enUS = {
-		DATA = "Data",
 		INSTANCE_TIMER = INSTANCE.." Timer",
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] cleared in <TIME> [<START>]-[<END>]",
 		MANUAL_RESET = TRACKER_SORT_MANUAL.." "..RESET,
@@ -21,7 +20,6 @@ local L = {
 		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-click|r to toggle this AddOn",
 	},
 	deDE = {
-		DATA = "Daten",
 		INSTANCE_TIMER = "Instanz-Zeitnehmer",
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] beendet in <TIME> [<START>]-[<END>]",
 		MANUAL_RESET = "Manuell zurücksetzen",
@@ -42,7 +40,6 @@ local L = {
 	ptBR = {},
 	ruRU = {},
 	zhCN = {		
-		DATA = "数据",
 		INSTANCE_TIMER = "副本计时器",
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] 已完成，用时 <TIME> [<START>]-[<END>]",
 		MANUAL_RESET = "手动重置",
@@ -53,7 +50,6 @@ local L = {
 		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-点击|r 启用或禁用插件",
 	},
 	zhTW = {
-		DATA = "數據",
 		INSTANCE_TIMER = "副本計時器",
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] 已完成，用時 <TIME> [<START>]-[<END>]",
 		MANUAL_RESET = "手動重置",
