@@ -47,7 +47,7 @@ S.defaults = {
 S.options = {
 	type = "group",
 	childGroups = "tab",
-	name = format("%s |cffADFF2Fv%s|r", S.NAME, S.VERSION),
+	name = format("%s |cffADFF2Fv%s|r", NAME, S.VERSION),
 	args = {
 		main = {
 			type = "group", order = 1,

@@ -1,16 +1,9 @@
--------------------------------------------
---- Author: Ketho (EU-Boulderfist)		---
---- License: Public Domain				---
---- Created: 2011.05.27					---
---- Version: 2.6 [2016.03.24]			---
--------------------------------------------
---- Curse			http://mods.curse.com/addons/wow/kinstancetimer
---- WoWInterface	http://www.wowinterface.com/downloads/info19910-KethoInstanceTimer.html
+-- Author: Ketho (EU-Boulderfist)
+-- License: Public Domain
 
 local NAME, S = ...
 S.VERSION = GetAddOnMetadata(NAME, "Version")
 S.BUILD = "Release"
-S.NAME = "Ketho InstanceTimer"
 
 KethoInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "AceConsole-3.0", "LibSink-2.0")
 local KIT = KethoInstanceTimer

@@ -21,7 +21,7 @@ local dataobject = {
 		end
 	end,
 	OnTooltipShow = function(tt)
-		tt:AddLine("|cffADFF2F"..S.NAME.."|r")
+		tt:AddLine("|cffADFF2F"..NAME.."|r")
 		tt:AddLine(L.BROKER_CLICK)
 		tt:AddLine(L.BROKER_SHIFT_CLICK)
 	end,

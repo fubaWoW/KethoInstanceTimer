@@ -32,7 +32,7 @@ function KIT:OnInitialize()
 	options.args.profiles.name = "|TInterface\\Icons\\INV_Misc_Note_01:16:16:-2:-1"..S.crop.."|t "..options.args.profiles.name
 	
 	ACR:RegisterOptionsTable(NAME, S.options)
-	ACD:AddToBlizOptions(NAME, S.NAME)
+	ACD:AddToBlizOptions(NAME, NAME)
 	ACD:SetDefaultSize(NAME, 550, 430)
 	
 	---------------------
