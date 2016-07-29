@@ -147,6 +147,10 @@ S.BossIDs = { -- untested
 	[77428] = true, -- Imperator Mar'gok; Highmaul
 	[77325] = true, -- Blackhand; Blackrock Foundry
 	[91331] = true, -- Archimonde; Hellfire Citadel
+	
+	-- [110] Legion (untested)
+	[102206] = true, -- Xavius;  The Emerald Nightmare
+	[110533] = true, -- Gul'dan; The Nighthold
 }
 
 -- /run for i = 1, GetNumRFDungeons() do print(GetRFDungeonInfo(i)) end

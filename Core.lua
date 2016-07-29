@@ -55,7 +55,7 @@ function KIT:OnInitialize()
 	--- Slash Commands ---
 	----------------------
 	
-	for _, v in ipairs({"kit", "kinstance", "kinstancetimer", "kethoinstance", "kethoinstancetimer"}) do
+	for _, v in ipairs({"kit", "kethoinstance", "kethoinstancetimer"}) do
 		self:RegisterChatCommand(v, "SlashCommand")
 	end
 	
