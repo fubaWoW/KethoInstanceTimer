@@ -1,5 +1,5 @@
-## Interface: 70000
-## Version: 2.7.1
+## Interface: 70100
+## Version: @project-version@
 ## Title: KethoInstanceTimer
 ## Notes: Ketho's Instance Timer
 ## Author: Ketho @ EU-Boulderfist
