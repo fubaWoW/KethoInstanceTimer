@@ -55,6 +55,9 @@ local L = {
 		MANUAL_RESET = "手動重置",
 		MANUAL_START = "手動開始",
 		RECORD_DATA = "紀錄數據",
+		
+		BROKER_CLICK = "|cffFFFFFF點擊|r打開選項菜單",
+		BROKER_SHIFT_CLICK = "|cffFFFFFFrShift-點擊|r 啟用或禁用插件",
 	},
 }
 

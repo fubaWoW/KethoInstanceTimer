@@ -149,8 +149,11 @@ S.BossIDs = { -- untested
 	[91331] = true, -- Archimonde; Hellfire Citadel
 	
 	-- [110] Legion (untested)
-	[102206] = true, -- Xavius;  The Emerald Nightmare
+	[102206] = true, -- Xavius; The Emerald Nightmare
 	[110533] = true, -- Gul'dan; The Nighthold
+	[114537] = true, -- Helya; Trial of Valor
+	[117269] = true, -- Kil'jaeden; Tomb of Sargeras
+	[124828] = true, -- Argus the Unmaker; Antorus, the Burning Throne
 }
 
 -- /run for i = 1, GetNumRFDungeons() do print(GetRFDungeonInfo(i)) end
@@ -216,6 +219,9 @@ function S.RemapDungeon() -- wait for init S.DungeonName
 		[93439] = S.DungeonName[984], -- "Bastion of Shadows"; "Tyrant Velhari"
 		[91349] = S.DungeonName[985], -- "Destructor's Rise"; "Mannoroth"
 		[91331] = S.DungeonName[986], -- "The Black Gate"; "Archimonde"
+		
+		-- [110] Legion
+		-- ...
 	}
 end
 
@@ -280,9 +286,10 @@ end
 	---------------------
 
 function KIT:StartData()
-	char.timeInstance = time()
-	char.startDate = date("%Y.%m.%d")
-	char.startTime = date("%H:%M")
+	local serverTime = GetServerTime()
+	char.timeInstance = serverTime
+	char.startDate = date("%Y.%m.%d", serverTime)
+	char.startTime = date("%H:%M", serverTime)
 	
 	-- reset so the broker timer can start counting again
 	S.LastInst = nil
@@ -386,7 +393,7 @@ end
 function S.StopwatchStart()
 	if S.pve[S.instance] then
 		if char.timeInstance > 0 then
-			StopwatchTicker.timer = time() - char.timeInstance
+			StopwatchTicker.timer = GetServerTime() - char.timeInstance
 		else
 			Stopwatch_Clear()
 		end
@@ -405,7 +412,7 @@ end
 
 function S.StopwatchPause()
 	-- recalibrate
-	StopwatchTicker.timer = time() - char.timeInstance
+	StopwatchTicker.timer = GetServerTime() - char.timeInstance
 	StopwatchTicker_Update()
 	Stopwatch_Pause()
 end
@@ -454,7 +461,7 @@ function KIT:Finalize()
 	end
 	
 	-- pause LibDataBroker display 
-	S.LastInst = (char.timeInstance > 0) and time() - char.timeInstance
+	S.LastInst = (char.timeInstance > 0) and GetServerTime() - char.timeInstance
 	
 	-- reset variables
 	self:ResetTime()
@@ -485,11 +492,11 @@ function KIT:Record(name)
 	tinsert(char.TimeInstanceList, {
 		date = char.startDate,
 		start = char.startTime,
-		["end"] = date("%H:%M"),
+		["end"] = date("%H:%M", GetServerTime()),
 		zone = name or self:Zone(),
 		instanceType = S.instance,
 		difficulty = select(3, GetInstanceInfo()),
-		time = time() - char.timeInstance,
+		time = GetServerTime() - char.timeInstance,
 		party = party,
 	})
 end
@@ -524,22 +531,23 @@ local exampleTime = random(3600)
 
 function KIT:InstanceText(isPreview, name)
 	wipe(args)
+	local serverTime = GetServerTime()
 	
 	if isPreview then
 		args.instance = "|cffA8A8FF"..self:Zone().."|r"
-		args.time = "|cff71D5FF"..self:Time(char.timeInstance > 0 and time() - char.timeInstance or exampleTime).."|r"
-		args.start = "|cffF6ADC6"..(char.timeInstance > 0 and char.startTime or date("%H:%M")).."|r" -- note startTime can be an empty string
-		args["end"] = "|cffADFF2F"..date("%H:%M", time() + exampleTime).."|r" -- can't use keywords as a table key o_O
-		args.date = "|cff0070DD"..date("%Y.%m.%d").."|r"
-		args.date2 = "|cff0070DD"..date("%m/%d/%y").."|r"
+		args.time = "|cff71D5FF"..self:Time(char.timeInstance > 0 and serverTime - char.timeInstance or exampleTime).."|r"
+		args.start = "|cffF6ADC6"..(char.timeInstance > 0 and char.startTime or date("%H:%M", serverTime)).."|r" -- note startTime can be an empty string
+		args["end"] = "|cffADFF2F"..date("%H:%M", serverTime + exampleTime).."|r" -- can't use keywords as a table key o_O
+		args.date = "|cff0070DD"..date("%Y.%m.%d", serverTime).."|r"
+		args.date2 = "|cff0070DD"..date("%m/%d/%y", serverTime).."|r"
 		args.difficulty = "|cffFFFF00"..(select(4, GetInstanceInfo()) or UNKNOWN).."|r"
 	else
 		args.instance = name or self:Zone()
-		args.time = self:Time(char.timeInstance > 0 and time() - char.timeInstance or 0)
+		args.time = self:Time(char.timeInstance > 0 and serverTime - char.timeInstance or 0)
 		args.start = char.startTime
-		args["end"] = date("%H:%M")
-		args.date = date("%Y.%m.%d")
-		args.date2 = date("%m/%d/%y")
+		args["end"] = date("%H:%M", serverTime)
+		args.date = date("%Y.%m.%d",serverTime)
+		args.date2 = date("%m/%d/%y", serverTime)
 		args.difficulty = select(4, GetInstanceInfo()) or UNKNOWN
 	end
 	return ReplaceArgs(profile.InstanceTimerMsg, args)

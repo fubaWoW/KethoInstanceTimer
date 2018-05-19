@@ -53,7 +53,7 @@ C_Timer.NewTicker(1, function()
 		dataobject.text = MilitaryTime(bgTime / 1000)
 	else
 		local timeInstance = KIT.db.char.timeInstance
-		dataobject.text = MilitaryTime(S.LastInst and S.LastInst or (timeInstance > 0 and time() - timeInstance or 0))
+		dataobject.text = MilitaryTime(S.LastInst and S.LastInst or (timeInstance > 0 and GetServerTime() - timeInstance or 0))
 	end
 end)
 
