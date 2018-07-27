@@ -154,6 +154,9 @@ S.BossIDs = { -- untested
 	[114537] = true, -- Helya; Trial of Valor
 	[117269] = true, -- Kil'jaeden; Tomb of Sargeras
 	[124828] = true, -- Argus the Unmaker; Antorus, the Burning Throne
+	
+	-- [120] Battle for Azeroth (untested)
+	[132998] = true, -- G'huun; Uldir
 }
 
 -- /run for i = 1, GetNumRFDungeons() do print(GetRFDungeonInfo(i)) end

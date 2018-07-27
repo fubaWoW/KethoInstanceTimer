@@ -178,8 +178,8 @@ end
 	--- End ---
 	-----------
 
-function KIT:COMBAT_LOG_EVENT_UNFILTERED(event, ...)
-	local timestamp, subevent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = ...
+function KIT:COMBAT_LOG_EVENT_UNFILTERED(event)
+	local timestamp, subevent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = CombatLogGetCurrentEventInfo()
 	
 	if subevent ~= "UNIT_DIED" then return end
 	
