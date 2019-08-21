@@ -6,6 +6,8 @@
 ## SavedVariables: KethoInstanceTimerDB
 ## OptionalDeps: Ace3
 ## X-Embeds: Ace3
+## X-Curse-Project-ID: 30054
+## X-WoWI-ID: 19910
 
 #@no-lib-strip@
 Libs\LibStub\LibStub.lua
