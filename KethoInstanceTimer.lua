@@ -1,6 +1,3 @@
--- Author: Ketho (EU-Boulderfist)
--- License: Public Domain
-
 local NAME, S = ...
 S.VERSION = GetAddOnMetadata(NAME, "Version")
 S.BUILD = "Release"
@@ -157,6 +154,9 @@ S.BossIDs = { -- untested
 	
 	-- [120] Battle for Azeroth (untested)
 	[132998] = true, -- G'huun; Uldir
+	[149684] = true, -- Lady Jaina Proudmoore; Battle of Dazar'alor
+	[150397] = true, -- King Mechagon; Operation: Mechagon
+	[155126] = true, -- Queen Azshara; The Eternal Palace
 }
 
 -- /run for i = 1, GetNumRFDungeons() do print(GetRFDungeonInfo(i)) end
