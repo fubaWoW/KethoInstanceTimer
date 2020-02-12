@@ -16,7 +16,7 @@ jobs:
       # run release.sh with arguments
       - uses: BigWigsMods/packager@master
         with:
-          args: release.sh -g 1.13.3
+          args: release.sh
 
       # use a specific version of release.sh (short-SHA)
       - uses: BigWigsMods/packager@a80cac9
