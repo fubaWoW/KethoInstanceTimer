@@ -427,8 +427,8 @@ end
 
 -- garrison instance type == "party" 
 function S.IsGarrison()
-	local mapId = select(8, GetInstanceInfo())
-	return S.garrison[mapId]
+	local instanceID = select(8, GetInstanceInfo())
+	return S.garrison[instanceID]
 end
 
 	--------------------

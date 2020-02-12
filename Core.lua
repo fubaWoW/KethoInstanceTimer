@@ -152,9 +152,14 @@ end
 function KIT:PLAYER_ENTERING_WORLD(event)
 	S.instance = select(2, IsInInstance())
 	
+	local prevInstance = S.mapinstance
+	S.mapinstance = select(8, GetInstanceInfo())
+	
 	if S.pve[S.instance] and not S.IsGarrison() then
+		-- zoned from an instance to a different instance
+		local changedInstances = (prevInstance and prevInstance ~= S.mapinstance)
 		-- entered instance
-		if char.timeInstance == 0 then
+		if char.timeInstance == 0 or changedInstances then
 			self:StartData()
 		end
 		
