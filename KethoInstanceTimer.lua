@@ -27,7 +27,7 @@ local args = S.args
 	--- Events ---
 	--------------
 
-S.events = {
+S.Events = {
 	"PLAYER_ENTERING_WORLD",
 	"COMBAT_LOG_EVENT_UNFILTERED",
 	"CHAT_MSG_SYSTEM",
