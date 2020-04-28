@@ -1,10 +1,15 @@
+#@retail@
 ## Interface: 80300
+#@end-retail@
+#@non-retail@
+# ## Interface: 11304
+#@end-non-retail@
 ## Version: @project-version@
 ## Title: KethoInstanceTimer
 ## Notes: Ketho's Instance Timer
 ## Author: Ketho @ EU-Boulderfist
 ## SavedVariables: KethoInstanceTimerDB
-## OptionalDeps: Ace3
+## OptionalDeps: Ace3, LibSink-2.0
 ## X-Embeds: Ace3
 ## X-Curse-Project-ID: 30054
 ## X-WoWI-ID: 19910

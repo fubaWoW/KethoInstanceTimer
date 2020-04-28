@@ -98,7 +98,8 @@ S.options = {
 				Stopwatch = {
 					type = "toggle", order = 5,
 					width = "full", descStyle = "",
-					name = "|TInterface\\Icons\\Spell_Holy_BorrowedTime:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r",
+					name = S.isClassic and "|TInterface\\Icons\\spell_nature_timestop:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r"
+						or "|TInterface\\Icons\\Spell_Holy_BorrowedTime:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r",
 					set = function(i, v)
 						profile.Stopwatch = v
 						if v then

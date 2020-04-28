@@ -39,14 +39,16 @@ function KIT:OnInitialize()
 	--- Dungeon Names ---
 	---------------------
 	
-	-- grab the localized names from the dungeon finder
-	for i = 1, GetNumRFDungeons() do
-		local id, name = GetRFDungeonInfo(i)
-		S.DungeonName[id] = name
-	end
-	
-	for k, v in pairs(S.SpecialDungeon) do
-		S.DungeonName[k] = GetLFGDungeonInfo(k)
+	if not S.isClassic then
+		-- grab the localized names from the dungeon finder
+		for i = 1, GetNumRFDungeons() do
+			local id, name = GetRFDungeonInfo(i)
+			S.DungeonName[id] = name
+		end
+		
+		for k, v in pairs(S.SpecialDungeon) do
+			S.DungeonName[k] = GetLFGDungeonInfo(k)
+		end
 	end
 	
 	S.RemapDungeon()
@@ -72,7 +74,7 @@ function KIT:OnInitialize()
 end
 
 function KIT:OnEnable()
-	for _, v in ipairs(S.events) do
+	for _, v in ipairs(S.isClassic and S.ClassicEvents or S.Events ) do
 		self:RegisterEvent(v)
 	end
 	
@@ -157,7 +159,7 @@ function KIT:PLAYER_ENTERING_WORLD(event)
 	
 	if S.pve[S.instance] and not S.IsGarrison() then
 		-- zoned from an instance to a different instance
-		local changedInstances = (prevInstance and prevInstance ~= S.mapinstance)
+		local changedInstances = prevInstance and prevInstance ~= S.mapinstance
 		-- entered instance
 		if char.timeInstance == 0 or changedInstances then
 			self:StartData()
@@ -191,9 +193,10 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event)
 	local unitType, _, _, _, _, npcId = strsplit("-", destGUID)
 	npcId = tonumber(npcId)
 	
+	local hasBossID = S.isClassic and S.ClassicBossIDs[npcId] or S.BossIDs[npcId]
 	-- dont report raid finder in normal/heroic/mythic raids
 	-- note that we still want to report in dungeons like maraudon and seasonal
-	local name = not S.IsNormalRaid() and S.DungeonIDs[npcId] or S.BossIDs[npcId]
+	local name = not S.IsNormalRaid() and S.DungeonIDs[npcId] or hasBossID
 	
 	if S.npc[unitType] and name and char.timeInstance > 0 then
 		

@@ -6,6 +6,8 @@ KethoInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "Ace
 local KIT = KethoInstanceTimer
 KIT.S = S -- debug purpose
 
+S.isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
+
 local L = S.L
 local profile, char
 
@@ -34,6 +36,12 @@ S.events = {
 	"LFG_PROPOSAL_SUCCEEDED",
 	"LFG_COMPLETION_REWARD",
 	"SCENARIO_COMPLETED",
+}
+
+S.ClassicEvents = {
+	"PLAYER_ENTERING_WORLD",
+	"COMBAT_LOG_EVENT_UNFILTERED",
+	"CHAT_MSG_SYSTEM",
 }
 
 	----------------------
@@ -75,8 +83,10 @@ S.garrison = {
 -- GetDifficultyInfo(difficultyID)
 S.difficulty = {}
 
-for i = 1, 30 do
-	S.difficulty[i] = GetDifficultyInfo(i)
+if not S.isClassic then
+	for i = 1, 30 do
+		S.difficulty[i] = GetDifficultyInfo(i)
+	end
 end
 
 local normalRaid = {
@@ -157,6 +167,29 @@ S.BossIDs = { -- untested
 	[149684] = true, -- Lady Jaina Proudmoore; Battle of Dazar'alor
 	[150397] = true, -- King Mechagon; Operation: Mechagon
 	[155126] = true, -- Queen Azshara; The Eternal Palace
+}
+
+S.ClassicBossIDs = {
+	[639] = true, -- Edwin VanCleef; Deadmines
+	[1716] = true, -- Bazil Thredd; Stormwind Stockade
+	[1853] = true, -- Darkmaster Gandling; Scholomance
+	[2748] = true, -- Archaedas; Uldaman
+	[3654] = true, -- Mutanus the Devourer; Wailing Caverns
+	[3977] = true, -- High Inquisitor Whitemane; Scarlet Monastery
+	[4275] = true, -- Archmage Arugal; Shadowfang Keep
+	[4421] = true, -- Charlga Razorflank; Razorfen Kraul
+	[4829] = true, -- Aku'mai; Blackfathom Deeps
+	[5709] = true, -- Shade of Eranikus; Sunken Temple
+	[7267] = true, -- Chief Ukorz Sandscalp; Zul'Farrak
+	[7358] = true, -- Amnennar the Coldbringer; Razorfen Downs
+	[7800] = true, -- Mekgineer Thermaplugg; Gnomeregan
+	[9019] = true, -- Emperor Dagran Thaurissan
+	[9568] = L["Lower Blackrock Spire"], -- Overlord Wyrmthalak
+	[10363] = L["Upper Blackrock Spire"], -- General Drakkisath
+	[10440] = true, -- Lord Aurius Rivendare; Stratholme
+	[11501] = true, -- King Gordok; Dire Maul
+	[11520] = true, -- Taragaman the Hungerer; Ragefire Chasm
+	[12201] = true, -- Princess Theradras; Maraudon
 }
 
 -- /run for i = 1, GetNumRFDungeons() do print(GetRFDungeonInfo(i)) end

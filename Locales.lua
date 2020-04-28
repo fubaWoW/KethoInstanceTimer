@@ -2,7 +2,7 @@ local _, S = ...
 
 local L = {
 	enUS = {
-		INSTANCE_TIMER = INSTANCE.." Timer",
+		INSTANCE_TIMER = "Instance Timer",
 		INSTANCE_TIMER_MSG = "[<INSTANCE>] cleared in <TIME> [<START>]-[<END>]",
 		MANUAL_RESET = TRACKER_SORT_MANUAL.." "..RESET,
 		MANUAL_START = TRACKER_SORT_MANUAL.." "..START,
