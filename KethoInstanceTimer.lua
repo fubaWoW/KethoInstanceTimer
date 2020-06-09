@@ -183,10 +183,11 @@ S.ClassicBossIDs = {
 	[7267] = true, -- Chief Ukorz Sandscalp; Zul'Farrak
 	[7358] = true, -- Amnennar the Coldbringer; Razorfen Downs
 	[7800] = true, -- Mekgineer Thermaplugg; Gnomeregan
-	[9019] = true, -- Emperor Dagran Thaurissan
+	[9019] = true, -- Emperor Dagran Thaurissan; Blackrock Depths
 	[9568] = L["Lower Blackrock Spire"], -- Overlord Wyrmthalak
 	[10363] = L["Upper Blackrock Spire"], -- General Drakkisath
-	[10440] = true, -- Lord Aurius Rivendare; Stratholme
+	[10813] = L["Stratholme - Main Gate"], -- Balnazzar
+	[10440] = L["Stratholme - Service Entrance"], -- Lord Aurius Rivendare
 	[11501] = true, -- King Gordok; Dire Maul
 	[11520] = true, -- Taragaman the Hungerer; Ragefire Chasm
 	[12201] = true, -- Princess Theradras; Maraudon
@@ -509,7 +510,7 @@ end
 	--------------
 
 -- Save Instance Timer data
-function KIT:Record(name)
+function KIT:Record(zoneName)
 	-- tried recycling "party" and that was kinda dumb of me
 	local party = {}
 	
@@ -529,7 +530,7 @@ function KIT:Record(name)
 		date = char.startDate,
 		start = char.startTime,
 		["end"] = date("%H:%M", GetServerTime()),
-		zone = name or self:Zone(),
+		zone = zoneName or self:Zone(),
 		instanceType = S.instance,
 		difficulty = select(3, GetInstanceInfo()),
 		time = GetServerTime() - char.timeInstance,
