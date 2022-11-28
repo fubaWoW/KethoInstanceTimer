@@ -98,8 +98,8 @@ S.options = {
 				Stopwatch = {
 					type = "toggle", order = 5,
 					width = "full", descStyle = "",
-					name = S.isClassic and "|TInterface\\Icons\\spell_nature_timestop:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r"
-						or "|TInterface\\Icons\\Spell_Holy_BorrowedTime:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r",
+					name = S.isRetail and "|TInterface\\Icons\\Spell_Holy_BorrowedTime:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r"
+						or "|TInterface\\Icons\\spell_nature_timestop:16:16:1:0"..S.crop.."|t  "..STOPWATCH_TITLE.."|r",
 					set = function(i, v)
 						profile.Stopwatch = v
 						if v then
@@ -284,7 +284,11 @@ function KIT:DataFrame()
 	-----------------
 		
 		f:SetResizable(true)
-		f:SetMinResize(150, 100) -- at least show the "okay" button
+		if S.isRetail then
+			f:SetResizeBounds(150, 100)
+		else
+			f:SetMinResize(150, 100) -- at least show the "okay" button
+		end
 		
 		local rb = CreateFrame("Button", "KethoInstanceTimerDataResizeButton", KethoInstanceTimerData)
 		rb:SetPoint("BOTTOMRIGHT", -6, 7); rb:SetSize(16, 16)

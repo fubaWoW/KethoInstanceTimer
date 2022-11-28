@@ -39,7 +39,7 @@ function KIT:OnInitialize()
 	--- Dungeon Names ---
 	---------------------
 	
-	if not S.isClassic then
+	if S.isRetail then
 		-- grab the localized names from the dungeon finder
 		for i = 1, GetNumRFDungeons() do
 			local id, name = GetRFDungeonInfo(i)
@@ -74,7 +74,7 @@ function KIT:OnInitialize()
 end
 
 function KIT:OnEnable()
-	for _, v in ipairs(S.isClassic and S.ClassicEvents or S.Events ) do
+	for _, v in ipairs(S.isRetail and S.Events or S.ClassicEvents) do
 		self:RegisterEvent(v)
 	end
 	
@@ -193,7 +193,7 @@ function KIT:COMBAT_LOG_EVENT_UNFILTERED(event)
 	local unitType, _, _, _, _, npcId = strsplit("-", destGUID)
 	npcId = tonumber(npcId)
 	
-	local hasBossID = S.isClassic and S.ClassicBossIDs[npcId] or S.BossIDs[npcId]
+	local hasBossID = S.isRetail and S.BossIDs[npcId] or S.ClassicBossIDs[npcId]
 	-- dont report raid finder in normal/heroic/mythic raids
 	-- note that we still want to report in dungeons like maraudon and seasonal
 	local name = not S.IsNormalRaid() and S.DungeonIDs[npcId] or hasBossID

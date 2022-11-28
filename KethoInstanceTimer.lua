@@ -6,7 +6,7 @@ KethoInstanceTimer = LibStub("AceAddon-3.0"):NewAddon(NAME, "AceEvent-3.0", "Ace
 local KIT = KethoInstanceTimer
 KIT.S = S -- debug purpose
 
-S.isClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
+S.isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 local L = S.L
 local profile, char
@@ -83,8 +83,8 @@ S.garrison = {
 -- GetDifficultyInfo(difficultyID)
 S.difficulty = {}
 
-if not S.isClassic then
-	for i = 1, 30 do
+if S.isRetail then
+	for i = 1, 200 do
 		S.difficulty[i] = GetDifficultyInfo(i)
 	end
 end
