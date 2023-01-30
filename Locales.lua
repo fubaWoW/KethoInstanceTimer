@@ -16,8 +16,9 @@ local L = {
 		TIME_LOWER_CASE = "Lower Case",
 		TIME_ABBREVIATE = "Abbreviate",
 		
-		BROKER_CLICK = "|cffFFFFFFClick|r to open the options menu",
-		BROKER_SHIFT_CLICK = "|cffFFFFFFShift-click|r to toggle this AddOn",
+		BROKER_LCLICK = "|cffFFFFFFLeft Click|r to toggle History",
+		BROKER_RCLICK = "|cffFFFFFFRight Click|r to toggle the options menu",
+		BROKER_SHIFT_CLICK = "|cffFFFFFFShift + Left Click|r to toggle this AddOn",
 	},
 	deDE = {
 		INSTANCE_TIMER = "Instanz-Zeitnehmer",
