@@ -339,6 +339,19 @@ function KIT:DataFrame()
 			eb:SetText(KIT:GetData())
 		end)
 		
+	----------------------------------------
+	--- Skin for ElvUI if it's installed ---
+	----------------------------------------
+	
+		if ElvUI then
+			local S = ElvUI[1]:GetModule('Skins')
+			KethoInstanceTimerData:SetTemplate('Transparent')
+			S:HandleButton(KethoInstanceTimerDataButton)
+			S:HandleScrollBar(KethoInstanceTimerDataScrollFrameScrollBar)
+			S:HandleCheckBox(realm)
+			S:HandleCheckBox(diff)
+		end
+		
 		f:Show()
 	else
 		KethoInstanceTimerData:Show()
