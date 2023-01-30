@@ -16,7 +16,7 @@ local dataobject = {
 	OnClick = function(clickedframe, button)
 		if button == "RightButton" then
 			ACD[ACD.OpenFrames[NAME] and "Close" or "Open"](ACD, NAME)
-		elseif button == "LeftButton" then
+		elseif button == "LeftButton" and not IsModifierKeyDown() then
 			if KethoInstanceTimerData then
 				if KethoInstanceTimerData:IsShown() then
 					KethoInstanceTimerData:Hide()
