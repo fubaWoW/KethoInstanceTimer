@@ -14,15 +14,26 @@ local dataobject = {
 	type = "data source",
 	icon = "Interface\\Icons\\Spell_Holy_BorrowedTime",
 	OnClick = function(clickedframe, button)
-		if IsModifierKeyDown() then
-			KIT:SlashCommand(KIT:IsEnabled() and "0" or "1")
-		else
+		if button == "RightButton" then
 			ACD[ACD.OpenFrames[NAME] and "Close" or "Open"](ACD, NAME)
+		elseif button == "LeftButton" and not IsModifierKeyDown() then
+			if KethoInstanceTimerData then
+				if KethoInstanceTimerData:IsShown() then
+					KethoInstanceTimerData:Hide()
+				else
+					KethoInstanceTimerData:Show()
+				end
+			else
+				KethoInstanceTimer:DataFrame()
+			end
+		elseif button == "LeftButton" and IsModifierKeyDown() then
+			KIT:SlashCommand(KIT:IsEnabled() and "0" or "1")
 		end
 	end,
 	OnTooltipShow = function(tt)
 		tt:AddLine("|cffADFF2F"..NAME.."|r")
-		tt:AddLine(L.BROKER_CLICK)
+		tt:AddLine(L.BROKER_LCLICK)
+		tt:AddLine(L.BROKER_RCLICK)
 		tt:AddLine(L.BROKER_SHIFT_CLICK)
 	end,
 }
